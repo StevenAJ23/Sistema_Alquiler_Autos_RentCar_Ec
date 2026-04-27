@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * { box-sizing: border-box; }
+  body { @apply bg-zinc-950 text-white antialiased; }
+  input, select, textarea { color: inherit; }
+}
+
+@layer components {
+  .card {
+    @apply bg-zinc-900 rounded-2xl border border-zinc-800;
+  }
+  .card-light {
+    @apply bg-zinc-800/60 rounded-2xl border border-zinc-700/50;
+  }
+  .btn-primary {
+    @apply bg-orange-500 hover:bg-orange-400 text-black font-bold
+           transition-all duration-200 rounded-xl px-5 py-2.5
+           active:scale-95;
+  }
+  .btn-outline {
+    @apply border border-zinc-700 hover:border-orange-500 hover:text-orange-400
+           text-zinc-300 font-medium transition-all duration-200 rounded-xl
+           px-5 py-2.5 bg-transparent;
+  }
+  .btn-ghost {
+    @apply text-zinc-400 hover:text-white hover:bg-zinc-800
+           transition-all duration-150 rounded-lg px-3 py-2;
+  }
+  .input-base {
+    @apply w-full px-4 py-2.5 text-sm bg-zinc-800 border border-zinc-700
+           rounded-xl text-white placeholder-zinc-500
+           focus:ring-2 focus:ring-orange-500 focus:border-orange-500
+           outline-none transition;
+  }
+  .badge {
+    @apply text-xs px-2.5 py-0.5 rounded-full font-semibold;
+  }
+  .section-title {
+    @apply text-2xl font-bold text-white tracking-tight;
+  }
+}

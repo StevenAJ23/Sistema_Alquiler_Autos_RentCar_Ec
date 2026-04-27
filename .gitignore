@@ -1,0 +1,43 @@
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+.output/
+
+# Variables de entorno — NUNCA subir
+.env
+.env.local
+.env.*.local
+.env.development
+.env.staging
+
+# Prisma
+prisma/migrations/dev.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Uploads generados en runtime (mantener .gitkeep)
+rentcar-ec-backend/public/uploads/vehiculos/*
+!rentcar-ec-backend/public/uploads/vehiculos/.gitkeep
+
+# TypeScript cache
+*.tsbuildinfo
