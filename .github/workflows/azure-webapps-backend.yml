@@ -1,0 +1,43 @@
+name: Deploy Backend to Azure Web App
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'rentcar-ec-backend/**'
+      - '.github/workflows/azure-webapps-backend.yml'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: rentcar-ec-backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: rentcar-ec-backend
+        run: npm ci
+
+      - name: Build TypeScript
+        working-directory: rentcar-ec-backend
+        run: npm run build
+
+      - name: Copy Prisma schema to dist
+        working-directory: rentcar-ec-backend
+        run: cp -r prisma dist/prisma
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'rentcar-ec-api-f2bdb7e6f7akaneu'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: rentcar-ec-backend
