@@ -1,5 +1,82 @@
 <template>
   <div class="max-w-2xl mx-auto px-4 py-8">
+    <!-- Modal Ver Factura -->
+    <Teleport to="body">
+      <div v-if="invoiceModal.open" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-md no-print" @click="invoiceModal.open = false" />
+        <div class="relative bg-white text-zinc-900 rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden print-area">
+          <!-- Header Factura -->
+          <div class="bg-zinc-950 p-8 text-white flex justify-between items-start">
+            <div>
+              <h2 class="text-2xl font-black tracking-tighter">RENTCAR EC</h2>
+              <p class="text-[10px] text-zinc-400 uppercase tracking-widest mt-1">Comprobante Electrónico</p>
+            </div>
+            <div class="text-right">
+              <p class="text-xs font-bold text-orange-400">{{ invoiceModal.data?.numeroFactura }}</p>
+              <p class="text-[10px] text-zinc-500 mt-1">{{ new Date(invoiceModal.data?.createdAt).toLocaleDateString() }}</p>
+            </div>
+          </div>
+
+          <div class="p-8 space-y-6">
+            <!-- Datos Cliente -->
+            <div class="grid grid-cols-2 gap-4 text-sm border-b border-zinc-100 pb-6">
+              <div>
+                <p class="text-[10px] text-zinc-400 font-bold uppercase mb-1">Razón Social</p>
+                <p class="font-bold">{{ invoiceModal.data?.razonSocial }}</p>
+              </div>
+              <div>
+                <p class="text-[10px] text-zinc-400 font-bold uppercase mb-1">RUC / Cédula</p>
+                <p class="font-mono text-xs">{{ invoiceModal.data?.rucCliente }}</p>
+              </div>
+            </div>
+
+            <!-- Tabla de items -->
+            <table class="w-full text-xs">
+              <thead>
+                <tr class="text-zinc-400 border-b border-zinc-100">
+                  <th class="pb-2 text-left font-bold uppercase">Descripción</th>
+                  <th class="pb-2 text-right font-bold uppercase">Cant.</th>
+                  <th class="pb-2 text-right font-bold uppercase">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="item in invoiceModal.data?.detalles" :key="item.id">
+                  <td class="py-3 font-medium">{{ item.descripcion }}</td>
+                  <td class="py-3 text-right">{{ item.cantidad }}</td>
+                  <td class="py-3 text-right font-bold">${{ Number(item.subtotal).toFixed(2) }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Totales -->
+            <div class="pt-4 border-t-2 border-dashed border-zinc-100 space-y-2">
+              <div class="flex justify-between text-xs text-zinc-500">
+                <span>Subtotal</span>
+                <span>${{ Number(invoiceModal.data?.subtotal).toFixed(2) }}</span>
+              </div>
+              <div class="flex justify-between text-xs text-zinc-500">
+                <span>IVA 15%</span>
+                <span>${{ Number(invoiceModal.data?.iva).toFixed(2) }}</span>
+              </div>
+              <div class="flex justify-between text-lg font-black text-zinc-950 pt-2">
+                <span>TOTAL</span>
+                <span class="text-orange-600">${{ Number(invoiceModal.data?.total).toFixed(2) }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer Modal -->
+          <div class="p-6 bg-zinc-50 flex gap-3 no-print">
+            <button @click="printInvoice" class="flex-1 btn-primary py-2.5 flex items-center justify-center gap-2">
+              <Printer class="w-4 h-4" /> Imprimir / PDF
+            </button>
+            <button @click="invoiceModal.open = false" class="px-6 py-2.5 rounded-xl font-bold text-zinc-500 hover:bg-zinc-200 transition-colors">
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
     <RouterLink to="/mis-reservas" class="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-white mb-6 transition-colors">
       <ChevronLeft class="w-4 h-4" /> Mis reservas
     </RouterLink>
@@ -169,7 +246,15 @@
             </p>
             <span class="font-mono text-[10px] text-emerald-400">{{ r.facturas[0].numeroFactura }}</span>
           </div>
-          <p class="text-[10px] text-zinc-500">Emitida el {{ new Date(r.facturas[0].createdAt).toLocaleDateString() }}</p>
+          <div class="flex items-center justify-between">
+            <p class="text-[10px] text-zinc-500">Emitida el {{ new Date(r.facturas[0].createdAt).toLocaleDateString() }}</p>
+            <button
+              @click="openInvoice(r.facturas[0])"
+              class="text-[10px] font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-colors"
+            >
+              <ExternalLink class="w-3 h-3" /> Ver Detalle
+            </button>
+          </div>
         </div>
 
         <!-- Cancelar -->
@@ -213,7 +298,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Loader2, ChevronLeft, Car, X, MapPin, CreditCard, FileText, CheckCircle2 } from 'lucide-vue-next';
+import { Loader2, ChevronLeft, Car, X, MapPin, CreditCard, FileText, CheckCircle2, ExternalLink, Printer } from 'lucide-vue-next';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { useReserva, useCancelReserva } from '@/composables/useReservas';
 import type { Reserva, ReservaStatus } from '@/types/domain';
@@ -251,6 +336,7 @@ const pagoError         = ref<string | null>(null);
 const facturaError      = ref<string | null>(null);
 const cancelError       = ref<string | null>(null);
 const showCancelConfirm = ref(false);
+const invoiceModal      = reactive({ open: false, data: null as any });
 
 const crearPago = useMutation({
   mutationFn: async () => {
@@ -311,6 +397,15 @@ async function handleFacturar() {
   catch (err: unknown) {
     facturaError.value = (err as { message?: string }).message ?? 'Error al generar factura';
   }
+}
+
+function openInvoice(data: any) {
+  invoiceModal.data = data;
+  invoiceModal.open = true;
+}
+
+function printInvoice() {
+  window.print();
 }
 
 async function confirmCancel() {
