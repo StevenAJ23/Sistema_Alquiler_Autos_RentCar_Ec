@@ -98,7 +98,12 @@
             <select v-model="newModelForm.marcaId" :class="inputCls" class="!py-1.5 !text-xs">
               <option value="">— Marca —</option>
               <option v-for="m in marcas" :key="m.id" :value="m.id">{{ m.nombre }}</option>
+              <option value="NEW_MARCA" class="text-orange-500 font-bold">+ Agregar nueva marca...</option>
             </select>
+          </div>
+          <div v-if="newModelForm.marcaId === 'NEW_MARCA'">
+            <label class="block text-[10px] font-bold text-zinc-500 mb-1 uppercase">Nombre de la Marca</label>
+            <input v-model="newModelForm.nuevaMarcaNombre" placeholder="Ej: Tesla" :class="inputCls" class="!py-1.5 !text-xs" />
           </div>
           <div>
             <label class="block text-[10px] font-bold text-zinc-500 mb-1 uppercase">Nombre del Modelo</label>
@@ -202,7 +207,7 @@ const combustibles = ref<TipoCombustible[]>([]);
 const transmisiones = ref<TipoTransmision[]>([]);
 const agencias     = ref<Agencia[]>([]);
 
-const newModelForm = reactive({ nombre: '', marcaId: '' });
+const newModelForm = reactive({ nombre: '', marcaId: '', nuevaMarcaNombre: '' });
 
 /** Extrae un array de una respuesta que puede ser array directo o paginada { data: [...] } */
 function extractArray(val: unknown): any[] {
@@ -259,6 +264,7 @@ function close() {
   Object.assign(modal, { open: false, id: null, row: makeEmpty() }); 
   newModelForm.nombre = '';
   newModelForm.marcaId = '';
+  newModelForm.nuevaMarcaNombre = '';
 }
 
 function handlePlacaInput(e: Event) {
@@ -311,11 +317,26 @@ async function handleSubmit() {
         formError.value = 'Nombre y Marca son obligatorios para el nuevo modelo';
         return;
       }
-      const resM = await apiClient.post('/modelos', newModelForm);
+      
+      let finalMarcaId = newModelForm.marcaId;
+
+      // Si también es una marca nueva
+      if (finalMarcaId === 'NEW_MARCA') {
+        if (!newModelForm.nuevaMarcaNombre) {
+          formError.value = 'El nombre de la nueva marca es obligatorio';
+          return;
+        }
+        const resMarca = await apiClient.post('/marcas', { nombre: newModelForm.nuevaMarcaNombre });
+        finalMarcaId = (resMarca as any).data?.id ?? (resMarca as any).id;
+      }
+
+      const resM = await apiClient.post('/modelos', { nombre: newModelForm.nombre, marcaId: finalMarcaId });
       finalModeloId = (resM as any).data?.id ?? (resM as any).id;
-      // Actualizar lista de modelos local para futuras entradas
-      const resList = await adminService.getModelos();
-      modelos.value = extractArray(resList);
+      
+      // Actualizar catálogos locales
+      const [resMod, resMarc] = await Promise.all([adminService.getModelos(), adminService.getMarcas()]);
+      modelos.value = extractArray(resMod);
+      marcas.value  = extractArray(resMarc);
     }
 
     if (modal.id) {

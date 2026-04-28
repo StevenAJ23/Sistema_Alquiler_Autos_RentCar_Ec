@@ -43,4 +43,15 @@ export class CatalogosController {
       res.status(201).json({ success: true, data });
     } catch (e) { next(e); }
   };
+
+  createMarca = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { nombre } = req.body;
+      if (!nombre) {
+        return res.status(400).json({ success: false, error: { message: 'El nombre de la marca es requerido' } });
+      }
+      const data = await this.db.marca.create({ data: { nombre } });
+      res.status(201).json({ success: true, data });
+    } catch (e) { next(e); }
+  };
 }
