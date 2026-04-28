@@ -129,6 +129,11 @@ export function useDeleteAgencia() {
   });
 }
 
+// Ciudades
+export function useCiudades() {
+  return useQuery({ queryKey: ['ciudades'], queryFn: () => adminGet('/ciudades') });
+}
+
 // Empresas
 export function useAdminEmpresas() {
   return useQuery({ queryKey: ['admin-empresas'], queryFn: () => adminGet('/empresas') });

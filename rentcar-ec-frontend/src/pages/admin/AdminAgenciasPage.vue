@@ -34,6 +34,22 @@
         <label class="block text-sm font-medium text-gray-700 mb-1">Nombre <span class="text-red-500">*</span></label>
         <input v-model="modal.row.nombre" required :class="inputCls" />
       </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Empresa <span class="text-red-500">*</span></label>
+          <select v-model="modal.row.empresaId" required :class="inputCls">
+            <option value="">Seleccione...</option>
+            <option v-for="e in empresas" :key="e.id" :value="e.id">{{ e.nombre }}</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Ciudad <span class="text-red-500">*</span></label>
+          <select v-model="modal.row.ciudadId" required :class="inputCls">
+            <option value="">Seleccione...</option>
+            <option v-for="c in ciudades" :key="c.id" :value="c.id">{{ c.nombre }}</option>
+          </select>
+        </div>
+      </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
         <input v-model="modal.row.direccion" placeholder="Av. Principal 123" :class="inputCls" />
@@ -56,8 +72,8 @@
 import { computed, reactive, ref } from 'vue';
 import AdminTable from '@/components/admin/AdminTable.vue';
 import AdminFormModal from '@/components/admin/AdminFormModal.vue';
-import { useAdminAgencias, useCreateAgencia, useUpdateAgencia, useDeleteAgencia } from '@/composables/useAdmin';
-import type { Agencia } from '@/types/domain';
+import { useAdminAgencias, useCreateAgencia, useUpdateAgencia, useDeleteAgencia, useAdminEmpresas, useCiudades } from '@/composables/useAdmin';
+import type { Agencia, Empresa, Ciudad } from '@/types/domain';
 import * as V from '@/utils/validators';
 
 const inputCls = 'input-base';
@@ -71,15 +87,26 @@ const columns = [
 ];
 
 const { data, isLoading } = useAdminAgencias();
+const { data: dataEmp } = useAdminEmpresas();
+const { data: dataCiu } = useCiudades();
 const create = useCreateAgencia();
 const update = useUpdateAgencia();
 const del    = useDeleteAgencia();
 
 const agencias = computed<Agencia[]>(() => Array.isArray(data.value) ? data.value as Agencia[] : []);
+const empresas = computed<Empresa[]>(() => Array.isArray(dataEmp.value) ? dataEmp.value as Empresa[] : []);
+const ciudades = computed<Ciudad[]>(() => Array.isArray(dataCiu.value) ? dataCiu.value as Ciudad[] : []);
 const formError = ref<string | null>(null);
 
 function makeEmpty(row?: Agencia) {
-  return { nombre: row?.nombre ?? '', direccion: row?.direccion ?? '', telefono: row?.telefono ?? '', email: row?.email ?? '' };
+  return {
+    nombre: row?.nombre ?? '',
+    direccion: row?.direccion ?? '',
+    telefono: row?.telefono ?? '',
+    email: row?.email ?? '',
+    empresaId: row?.empresa?.id ?? '',
+    ciudadId: row?.ciudad?.id ?? '',
+  };
 }
 
 const modal = reactive({ open: false, id: null as string | null, row: makeEmpty() });
@@ -94,6 +121,8 @@ function validateAgencia(): string {
   const r = modal.row;
   const checks = [
     V.minLen(r.nombre, 3, 'El nombre'),
+    !r.empresaId ? 'Debe seleccionar una empresa' : '',
+    !r.ciudadId ? 'Debe seleccionar una ciudad' : '',
     V.telefonoOpc(r.telefono),
     V.emailOpc(r.email),
   ];
