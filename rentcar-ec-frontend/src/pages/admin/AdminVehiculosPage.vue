@@ -111,21 +111,25 @@
         <input v-model="modal.row.descripcion" placeholder="Descripción del vehículo..." :class="inputCls" />
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Imagen del vehículo</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">URL de la Imagen (Recomendado para Azure)</label>
+        <input v-model="modal.row.imagenUrl" placeholder="https://ejemplo.com/auto.jpg" :class="inputCls" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">O subir archivo (Opcional)</label>
         <div v-if="imagenPreview || modal.row.imagenUrl" class="mb-2">
           <img
-            :src="imagenPreview || getImagenUrl(modal.row.imagenUrl)"
+            :src="imagenPreview || (modal.row.imagenUrl && modal.row.imagenUrl.startsWith('http') ? modal.row.imagenUrl : getImagenUrl(modal.row.imagenUrl))"
             alt="Vista previa"
-            class="w-full h-36 object-cover rounded-lg border border-gray-200"
+            class="w-full h-40 object-cover rounded-xl border border-zinc-700 shadow-lg"
           />
         </div>
         <input
           type="file"
           accept="image/*"
           @change="handleFileChange"
-          class="block w-full text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"
+          class="block w-full text-xs text-zinc-400 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-300 hover:file:bg-zinc-700 transition-all cursor-pointer"
         />
-        <p class="text-xs text-gray-400 mt-1">JPG, PNG, WebP — máximo 5 MB</p>
+        <p class="mt-1 text-[10px] text-zinc-500">JPG, PNG, WebP — máximo 5 MB</p>
       </div>
       <label class="flex items-center gap-2 cursor-pointer">
         <input v-model="modal.row.isActive" type="checkbox" class="w-4 h-4 rounded text-blue-600" />

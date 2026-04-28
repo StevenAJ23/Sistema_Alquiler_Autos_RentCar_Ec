@@ -34,6 +34,7 @@ export const CreateVehiculoSchema = z.object({
   agenciaId:         z.string().min(1, 'La agencia es requerida'),
   tipoCombustibleId: z.string().uuid('ID de tipo de combustible inválido'),
   tipoTransmisionId: z.string().uuid('ID de tipo de transmisión inválido'),
+  imagenUrl:         z.string().url('URL de imagen inválida').optional(),
 });
 
 export const UpdateVehiculoSchema = CreateVehiculoSchema.partial().extend({
