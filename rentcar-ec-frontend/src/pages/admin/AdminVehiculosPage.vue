@@ -82,10 +82,10 @@
         <label class="block text-sm font-medium text-gray-700 mb-1">Modelo <span class="text-red-500">*</span></label>
         <select v-model="modal.row.modeloId" required :class="inputCls">
           <option value="">— Selecciona modelo —</option>
+          <option value="NEW_MODEL" class="text-orange-500 font-bold bg-orange-500/10">⭐ + AGREGAR NUEVO MODELO...</option>
           <option v-for="m in modelos" :key="m.id" :value="m.id">
             {{ m.marca?.nombre }} {{ m.nombre }}
           </option>
-          <option value="NEW_MODEL" class="text-orange-500 font-bold">+ Agregar nuevo modelo...</option>
         </select>
       </div>
 
@@ -97,8 +97,8 @@
             <label class="block text-[10px] font-bold text-zinc-500 mb-1 uppercase">Marca</label>
             <select v-model="newModelForm.marcaId" :class="inputCls" class="!py-1.5 !text-xs">
               <option value="">— Marca —</option>
+              <option value="NEW_MARCA" class="text-orange-500 font-bold bg-orange-500/10">⭐ + AGREGAR NUEVA MARCA...</option>
               <option v-for="m in marcas" :key="m.id" :value="m.id">{{ m.nombre }}</option>
-              <option value="NEW_MARCA" class="text-orange-500 font-bold">+ Agregar nueva marca...</option>
             </select>
           </div>
           <div v-if="newModelForm.marcaId === 'NEW_MARCA'">
