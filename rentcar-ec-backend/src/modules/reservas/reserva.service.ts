@@ -35,23 +35,23 @@ export class ReservaService {
 
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);
-    if (fechaInicio < hoy) throw new ValidationException('No puedes hacer reservas en fechas pasadas');
+    if (fechaInicio < hoy) throw new ValidationException(`La fecha de inicio (${dto.fechaInicio}) es pasada. Hoy es ${hoy.toLocaleDateString()}`);
 
-    if (fechaFin <= fechaInicio) throw new ValidationException('La fecha de fin debe ser posterior a la fecha de inicio');
+    if (fechaFin <= fechaInicio) throw new ValidationException('La fecha de devolución debe ser al menos un día después de la entrega');
 
     const dias = this.calcularDias(fechaInicio, fechaFin);
-    if (dias < 1) throw new ValidationException('La reserva debe ser de al menos 1 día');
+    if (dias < 1) throw new ValidationException('La duración mínima de alquiler es de 1 día');
 
     const vehiculo = await this.vehiculoRepository.findByIdWithRelations(dto.vehiculoId);
     if (!vehiculo || !vehiculo.isActive || vehiculo.deletedAt) throw new NotFoundException('Vehículo', dto.vehiculoId);
     
     // 1. Validar que el vehículo esté DISPONIBLE
     if (vehiculo.status !== 'DISPONIBLE') {
-      throw new NoAvailabilityException(`El vehículo no puede reservarse porque está en estado: ${vehiculo.status}`);
+      throw new NoAvailabilityException(`Este vehículo ya no está disponible (Estado actual: ${vehiculo.status})`);
     }
 
     const hayConflicto = await this.reservaRepository.checkOverlap(dto.vehiculoId, fechaInicio, fechaFin);
-    if (hayConflicto) throw new NoAvailabilityException('El vehículo ya tiene una reserva en ese rango de fechas');
+    if (hayConflicto) throw new NoAvailabilityException('¡Lo sentimos! Este vehículo ya tiene una reserva confirmada en las fechas seleccionadas.');
 
     const precioBase = Number(vehiculo.precioDia) * dias;
     let precioSeguro = 0;
