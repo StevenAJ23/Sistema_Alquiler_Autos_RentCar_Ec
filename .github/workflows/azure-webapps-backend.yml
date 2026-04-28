@@ -46,7 +46,7 @@ jobs:
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'rentcar-ec-api-f2bdb7e6f7akaneu'
+          app-name: 'rentcar-ec-api'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: rentcar-ec-backend
           startup-command: 'node dist/server.js'
