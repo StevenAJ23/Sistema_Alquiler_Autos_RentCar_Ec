@@ -82,34 +82,10 @@
         <label class="block text-sm font-medium text-gray-700 mb-1">Modelo <span class="text-red-500">*</span></label>
         <select v-model="modal.row.modeloId" required :class="inputCls">
           <option value="">— Selecciona modelo —</option>
-          <option value="NEW_MODEL" class="text-orange-500 font-bold bg-orange-500/10">⭐ + AGREGAR NUEVO MODELO...</option>
           <option v-for="m in modelos" :key="m.id" :value="m.id">
             {{ m.marca?.nombre }} {{ m.nombre }}
           </option>
         </select>
-      </div>
-
-      <!-- Formulario Nuevo Modelo -->
-      <div v-if="modal.row.modeloId === 'NEW_MODEL'" class="bg-orange-500/10 border border-orange-500/30 rounded-xl p-4 space-y-3 my-2">
-        <p class="text-xs font-bold text-orange-400 uppercase tracking-widest">Nuevo Modelo</p>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-[10px] font-bold text-zinc-500 mb-1 uppercase">Marca</label>
-            <select v-model="newModelForm.marcaId" :class="inputCls" class="!py-1.5 !text-xs">
-              <option value="">— Marca —</option>
-              <option value="NEW_MARCA" class="text-orange-500 font-bold bg-orange-500/10">⭐ + AGREGAR NUEVA MARCA...</option>
-              <option v-for="m in marcas" :key="m.id" :value="m.id">{{ m.nombre }}</option>
-            </select>
-          </div>
-          <div v-if="newModelForm.marcaId === 'NEW_MARCA'">
-            <label class="block text-[10px] font-bold text-zinc-500 mb-1 uppercase">Nombre de la Marca</label>
-            <input v-model="newModelForm.nuevaMarcaNombre" placeholder="Ej: Tesla" :class="inputCls" class="!py-1.5 !text-xs" />
-          </div>
-          <div>
-            <label class="block text-[10px] font-bold text-zinc-500 mb-1 uppercase">Nombre del Modelo</label>
-            <input v-model="newModelForm.nombre" placeholder="Ej: Corolla" :class="inputCls" class="!py-1.5 !text-xs" />
-          </div>
-        </div>
       </div>
 
       <div class="grid grid-cols-3 gap-3">
@@ -200,14 +176,11 @@ const vehiculos = computed<Vehiculo[]>(() => {
 
 const formError     = ref<string | null>(null);
 
-const marcas       = ref<Marca[]>([]);
 const modelos      = ref<Modelo[]>([]);
 const categorias   = ref<Categoria[]>([]);
 const combustibles = ref<TipoCombustible[]>([]);
 const transmisiones = ref<TipoTransmision[]>([]);
 const agencias     = ref<Agencia[]>([]);
-
-const newModelForm = reactive({ nombre: '', marcaId: '', nuevaMarcaNombre: '' });
 
 /** Extrae un array de una respuesta que puede ser array directo o paginada { data: [...] } */
 function extractArray(val: unknown): any[] {
@@ -220,20 +193,18 @@ function extractArray(val: unknown): any[] {
 }
 
 onMounted(async () => {
-  const [rm, rc, rcomb, rt, ra, rma] = await Promise.allSettled([
+  const [rm, rc, rcomb, rt, ra] = await Promise.allSettled([
     adminService.getModelos(),
     adminService.getCategorias(),
     adminService.getCombustibles(),
     adminService.getTransmisiones(),
     adminService.getAgencias(),
-    adminService.getMarcas(),
   ]);
   if (rm.status    === 'fulfilled') modelos.value       = extractArray(rm.value);
   if (rc.status    === 'fulfilled') categorias.value    = extractArray(rc.value);
   if (rcomb.status === 'fulfilled') combustibles.value  = extractArray(rcomb.value);
   if (rt.status    === 'fulfilled') transmisiones.value = extractArray(rt.value);
   if (ra.status    === 'fulfilled') agencias.value      = extractArray(ra.value);
-  if (rma.status   === 'fulfilled') marcas.value        = extractArray(rma.value);
 });
 
 function makeEmpty(row?: Vehiculo) {
@@ -262,9 +233,6 @@ function openEdit(row: Vehiculo) { formError.value = null; Object.assign(modal, 
 function close() { 
   formError.value = null; 
   Object.assign(modal, { open: false, id: null, row: makeEmpty() }); 
-  newModelForm.nombre = '';
-  newModelForm.marcaId = '';
-  newModelForm.nuevaMarcaNombre = '';
 }
 
 function handlePlacaInput(e: Event) {
@@ -309,41 +277,12 @@ async function handleSubmit() {
   if (err) { formError.value = err; return; }
   try {
     let vehiculoId: string;
-    let finalModeloId = modal.row.modeloId;
-
-    // Si es un modelo nuevo, crearlo primero
-    if (modal.row.modeloId === 'NEW_MODEL') {
-      if (!newModelForm.nombre || !newModelForm.marcaId) {
-        formError.value = 'Debes escribir el NOMBRE y seleccionar la MARCA para el nuevo modelo';
-        return;
-      }
-      
-      let finalMarcaId = newModelForm.marcaId;
-
-      // Si también es una marca nueva
-      if (finalMarcaId === 'NEW_MARCA') {
-        if (!newModelForm.nuevaMarcaNombre) {
-          formError.value = 'Debes escribir el nombre de la NUEVA MARCA';
-          return;
-        }
-        const resMarca = await apiClient.post('/marcas', { nombre: newModelForm.nuevaMarcaNombre });
-        finalMarcaId = (resMarca as any).data?.id ?? (resMarca as any).id;
-      }
-
-      const resM = await apiClient.post('/modelos', { nombre: newModelForm.nombre, marcaId: finalMarcaId });
-      finalModeloId = (resM as any).data?.id ?? (resM as any).id;
-      
-      // Actualizar catálogos locales
-      const [resMod, resMarc] = await Promise.all([adminService.getModelos(), adminService.getMarcas()]);
-      modelos.value = extractArray(resMod);
-      marcas.value  = extractArray(resMarc);
-    }
 
     if (modal.id) {
-      await update.mutateAsync({ id: modal.id, data: { ...modal.row, modeloId: finalModeloId } });
+      await update.mutateAsync({ id: modal.id, data: { ...modal.row } });
       vehiculoId = modal.id;
     } else {
-      const res  = await create.mutateAsync({ ...modal.row, modeloId: finalModeloId });
+      const res  = await create.mutateAsync({ ...modal.row });
       vehiculoId = (res as any)?.data?.id ?? (res as any)?.id ?? '';
     }
 
