@@ -110,9 +110,10 @@ export class ReservaService {
     if ((reserva as any).status === 'CANCELADA') throw new ValidationException('La reserva ya está cancelada');
     if (['COMPLETADA', 'ACTIVA'].includes((reserva as any).status)) throw new ValidationException(`No se puede cancelar una reserva en estado ${(reserva as any).status}`);
 
-    // Nueva validación: No se puede cancelar si ya se generó factura
-    if ((reserva as any).facturas?.length > 0) {
-      throw new ValidationException('No se puede cancelar una reserva que ya tiene una factura emitida. Contacte con administración.');
+    // NUEVO BLINDAJE HERMÉTICO: No se puede cancelar si ya se generó factura (Protección Contable)
+    const tieneFactura = await this.db.factura.findFirst({ where: { reservaId: id } });
+    if (tieneFactura || (reserva as any).facturas?.length > 0) {
+      throw new ValidationException('BLOQUEO CONTABLE: Esta reserva ya tiene una factura legal emitida. Para anularla, debe realizar una Nota de Crédito manual en el SRI.');
     }
 
     await this.reservaRepository.updateStatus(id, 'CANCELADA');
