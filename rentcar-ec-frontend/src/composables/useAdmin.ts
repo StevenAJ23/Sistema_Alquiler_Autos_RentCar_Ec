@@ -22,10 +22,20 @@ function extractData(response: unknown) {
   return response;
 }
 
+function handleUnauthorized(res: Response) {
+  if (res.status === 401) {
+    localStorage.removeItem('rentcar_token');
+    localStorage.removeItem('rentcar_user');
+    window.location.href = '/login';
+    throw new Error('Sesión expirada');
+  }
+}
+
 async function adminGet(path: string) {
   const res = await fetch(`${API_URL}${path}`, {
     headers: { Authorization: `Bearer ${getToken()}` },
   });
+  handleUnauthorized(res);
   if (!res.ok) throw new Error(`Error al cargar ${path}`);
   const json = await res.json();
   return extractData(json);
@@ -37,6 +47,7 @@ async function adminPost(path: string, body: unknown) {
     headers: authHeaders(),
     body: JSON.stringify(body),
   });
+  handleUnauthorized(res);
   if (!res.ok) {
     const err = await res.json().catch(() => ({})) as Record<string, unknown>;
     throw new Error((err?.error as Record<string, unknown>)?.message as string || 'Error al crear');
@@ -50,6 +61,7 @@ async function adminPatch(path: string, body: unknown) {
     headers: authHeaders(),
     body: JSON.stringify(body),
   });
+  handleUnauthorized(res);
   if (!res.ok) {
     const err = await res.json().catch(() => ({})) as Record<string, unknown>;
     throw new Error((err?.error as Record<string, unknown>)?.message as string || 'Error al actualizar');
@@ -62,6 +74,7 @@ async function adminDelete(path: string) {
     method: 'DELETE',
     headers: { Authorization: `Bearer ${getToken()}` },
   });
+  handleUnauthorized(res);
   if (!res.ok) throw new Error('Error al eliminar');
   return res.json();
 }

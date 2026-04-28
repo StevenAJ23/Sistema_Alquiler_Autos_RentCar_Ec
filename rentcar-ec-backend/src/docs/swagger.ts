@@ -11,6 +11,20 @@ Versión: **Reto 1 — Construcción base sin integración externa**.
 
 ---
 
+### 🔗 Preparado para integración futura (Reto 2)
+
+Estos endpoints están diseñados bajo el estándar OpenAPI para ser consumidos por el prototipo de **Booking**:
+
+*   **Búsqueda de Disponibilidad:** \`GET /api/v1/vehiculos/search\`
+*   **Detalle de Vehículo:** \`GET /api/v1/vehiculos/{id}\`
+*   **Crear Reserva:** \`POST /api/v1/reservas\`
+*   **Cancelar Reserva:** \`PATCH /api/v1/reservas/{id}/cancel\`
+*   **Registrar Pago:** \`POST /api/v1/pagos\`
+
+**Eventos Outbox modelados:** \`RESERVA_CREADA\`, \`RESERVA_CANCELADA\`, \`PAGO_REGISTRADO\`, \`FACTURA_GENERADA\`.
+
+---
+
 ### 🚀 Inicio rápido
 
 1. **Login** → \`POST /api/v1/auth/login\`
@@ -116,13 +130,14 @@ Registro → Login → Buscar vehículo → Crear reserva
       },
       CreateReservaDto: {
         type: 'object',
-        required: ['vehiculoId', 'fechaInicio', 'fechaFin'],
+        required: ['vehiculoId', 'agenciaId', 'fechaInicio', 'fechaFin'],
         properties: {
           vehiculoId: { type: 'string', format: 'uuid', description: 'ID del vehículo a reservar' },
+          agenciaId: { type: 'string', format: 'uuid', description: 'ID de la agencia de recogida' },
           fechaInicio: { type: 'string', format: 'date', example: '2026-09-01', description: 'Fecha de inicio (YYYY-MM-DD)' },
           fechaFin: { type: 'string', format: 'date', example: '2026-09-05', description: 'Fecha de fin (YYYY-MM-DD)' },
           seguroId: { type: 'string', format: 'uuid', description: 'Opcional — UUID del seguro seleccionado' },
-          tarifaId: { type: 'string', format: 'uuid', description: 'Opcional — UUID de tarifa especial' },
+          canalVentaId: { type: 'string', format: 'uuid', description: 'Opcional — UUID del canal de venta (WEB, APP, MOSTRADOR)' },
           extras: {
             type: 'array',
             description: 'Lista de extras seleccionados',
@@ -131,14 +146,15 @@ Registro → Login → Buscar vehículo → Crear reserva
               required: ['extraId', 'cantidad'],
               properties: {
                 extraId: { type: 'string', format: 'uuid' },
-                cantidad: { type: 'integer', minimum: 1, example: 1 },
+                cantidad: { type: 'integer', minimum: 1, maximum: 10, example: 1 },
               },
             },
           },
-          notas: { type: 'string', example: 'Llegamos al mediodía' },
+          notas: { type: 'string', maxLength: 500, example: 'Llegamos al mediodía' },
         },
         example: {
           vehiculoId: '31f4ce3c-db82-4594-81ac-378b8acac395',
+          agenciaId: 'ag-quito-norte-001',
           fechaInicio: '2026-09-01',
           fechaFin: '2026-09-05',
           seguroId: '484cd69e-cb75-4c70-9070-1a78fcb0d1bb',
@@ -205,12 +221,15 @@ Registro → Login → Buscar vehículo → Crear reserva
         type: 'object',
         required: ['reservaId'],
         properties: {
-          reservaId: { type: 'string', format: 'uuid', description: 'ID de la reserva pagada' },
-          observaciones: { type: 'string', example: 'Factura correspondiente al alquiler de septiembre 2026' },
+          reservaId:   { type: 'string', format: 'uuid', description: 'ID de la reserva pagada' },
+          pagoId:      { type: 'string', format: 'uuid', description: 'Opcional — UUID del pago asociado' },
+          rucCliente:  { type: 'string', example: '1791234567001', description: 'Opcional — Cédula (10 dígitos) o RUC (13 dígitos) del cliente' },
+          razonSocial: { type: 'string', maxLength: 200, example: 'Juan Pérez', description: 'Opcional — Razón social para la factura' },
         },
         example: {
           reservaId: '<uuid-reserva-pagada>',
-          observaciones: 'Factura correspondiente al alquiler de septiembre 2026',
+          rucCliente: '1712345678',
+          razonSocial: 'Juan Pérez',
         },
       },
       CreateVehiculoDto: {

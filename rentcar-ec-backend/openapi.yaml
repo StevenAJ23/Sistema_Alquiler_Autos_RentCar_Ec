@@ -16,12 +16,15 @@ info:
     ## Autenticación
     JWT Bearer token. Obtener en `POST /auth/login`.
 
-    ## Preparado para integración futura (Reto 2)
-    Booking Prototipo usará: `GET /vehiculos/search`, `POST /reservas`,
-    `PATCH /reservas/{id}/cancel`, `POST /pagos`.
+    ## 🔗 Preparado para integración futura (Reto 2)
+    Estos endpoints están diseñados bajo el estándar OpenAPI para ser consumidos por el prototipo de **Booking**:
+    * **Búsqueda de Disponibilidad:** `GET /api/v1/vehiculos/search`
+    * **Detalle de Vehículo:** `GET /api/v1/vehiculos/{id}`
+    * **Crear Reserva:** `POST /api/v1/reservas`
+    * **Cancelar Reserva:** `PATCH /api/v1/reservas/{id}/cancel`
+    * **Registrar Pago:** `POST /api/v1/pagos`
 
-    Eventos outbox modelados: `RESERVA_CREADA`, `RESERVA_CANCELADA`,
-    `PAGO_REGISTRADO`, `ALQUILER_INICIADO`, `VEHICULO_DEVUELTO`, `FACTURA_GENERADA`.
+    **Eventos Outbox modelados:** `RESERVA_CREADA`, `RESERVA_CANCELADA`, `PAGO_REGISTRADO`, `FACTURA_GENERADA`.
   version: 1.0.0
   contact:
     name: RentCar Ecuador
