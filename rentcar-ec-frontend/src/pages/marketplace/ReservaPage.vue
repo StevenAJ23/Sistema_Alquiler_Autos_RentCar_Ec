@@ -46,6 +46,11 @@
             </p>
           </div>
 
+          <!-- Aviso si no cargan extras/seguros -->
+          <div v-if="catalogosError" class="flex items-start gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs rounded-xl p-3">
+            <span>{{ catalogosError }}</span>
+          </div>
+
           <!-- Seguros -->
           <div v-if="seguros.length > 0" class="card p-5">
             <h2 class="font-bold text-white mb-4">Seguro de viaje</h2>
@@ -164,7 +169,8 @@ const seguros = ref<Seguro[]>([]);
 const { data, isLoading } = useVehiculo(vehiculoId);
 const v = computed<Vehiculo | undefined>(() => data.value?.data);
 const createReserva = useCreateReserva();
-const submitError = ref<string | null>(null);
+const submitError    = ref<string | null>(null);
+const catalogosError = ref<string | null>(null);
 
 onMounted(async () => {
   try {
@@ -178,7 +184,9 @@ onMounted(async () => {
     const lista: CanalVenta[] = (resCanales as { data?: CanalVenta[] })?.data ?? [];
     const web = lista.find(c => c.codigo === 'WEB') ?? lista[0];
     if (web) canalVentaId.value = web.id;
-  } catch { /* silent */ }
+  } catch {
+    catalogosError.value = 'No se pudieron cargar los extras y seguros. Puedes continuar sin seleccionar opciones adicionales.';
+  }
 });
 
 const dias = computed(() => {

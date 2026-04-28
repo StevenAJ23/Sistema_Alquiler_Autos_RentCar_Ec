@@ -74,13 +74,13 @@ Registro → Login → Buscar vehículo → Crear reserva
         type: 'object',
         required: ['email', 'password', 'nombres', 'apellidos'],
         properties: {
-          email:     { type: 'string', format: 'email', example: 'nuevo.usuario@test.ec' },
-          password:  { type: 'string', minLength: 6, example: 'MiClave2026!' },
-          nombres:   { type: 'string', example: 'Carlos' },
+          email: { type: 'string', format: 'email', example: 'nuevo.usuario@test.ec' },
+          password: { type: 'string', minLength: 6, example: 'MiClave2026!' },
+          nombres: { type: 'string', example: 'Carlos' },
           apellidos: { type: 'string', example: 'Mendoza' },
-          cedula:    { type: 'string', example: '1712345678' },
-          telefono:  { type: 'string', example: '0991234567' },
-          ciudadId:  { type: 'string', format: 'uuid', description: 'Opcional — UUID de ciudad del catálogo' },
+          cedula: { type: 'string', example: '1712345678' },
+          telefono: { type: 'string', example: '0991234567' },
+          ciudadId: { type: 'string', format: 'uuid', description: 'Opcional — UUID de ciudad del catálogo' },
         },
         example: {
           email: 'nuevo.usuario@test.ec',
@@ -95,7 +95,7 @@ Registro → Login → Buscar vehículo → Crear reserva
         type: 'object',
         required: ['email', 'password'],
         properties: {
-          email:    { type: 'string', format: 'email', example: 'admin@rentcar.ec' },
+          email: { type: 'string', format: 'email', example: 'admin@rentcar.ec' },
           password: { type: 'string', example: 'Admin2025!' },
         },
         example: { email: 'admin@rentcar.ec', password: 'Admin2025!' },
@@ -104,8 +104,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         type: 'object',
         required: ['usuarioId', 'numeroLicencia', 'fechaVencLicencia'],
         properties: {
-          usuarioId:         { type: 'string', description: 'UUID del usuario registrado' },
-          numeroLicencia:    { type: 'string', example: 'LIC-EC-2026-001' },
+          usuarioId: { type: 'string', description: 'UUID del usuario registrado' },
+          numeroLicencia: { type: 'string', example: 'LIC-EC-2026-001' },
           fechaVencLicencia: { type: 'string', format: 'date', example: '2028-06-30' },
         },
         example: {
@@ -118,19 +118,19 @@ Registro → Login → Buscar vehículo → Crear reserva
         type: 'object',
         required: ['vehiculoId', 'fechaInicio', 'fechaFin'],
         properties: {
-          vehiculoId:    { type: 'string', format: 'uuid', description: 'ID del vehículo a reservar' },
-          fechaInicio:   { type: 'string', format: 'date', example: '2026-09-01', description: 'Fecha de inicio (YYYY-MM-DD)' },
-          fechaFin:      { type: 'string', format: 'date', example: '2026-09-05', description: 'Fecha de fin (YYYY-MM-DD)' },
-          seguroId:      { type: 'string', format: 'uuid', description: 'Opcional — UUID del seguro seleccionado' },
-          tarifaId:      { type: 'string', format: 'uuid', description: 'Opcional — UUID de tarifa especial' },
-          extras:        {
+          vehiculoId: { type: 'string', format: 'uuid', description: 'ID del vehículo a reservar' },
+          fechaInicio: { type: 'string', format: 'date', example: '2026-09-01', description: 'Fecha de inicio (YYYY-MM-DD)' },
+          fechaFin: { type: 'string', format: 'date', example: '2026-09-05', description: 'Fecha de fin (YYYY-MM-DD)' },
+          seguroId: { type: 'string', format: 'uuid', description: 'Opcional — UUID del seguro seleccionado' },
+          tarifaId: { type: 'string', format: 'uuid', description: 'Opcional — UUID de tarifa especial' },
+          extras: {
             type: 'array',
             description: 'Lista de extras seleccionados',
             items: {
               type: 'object',
               required: ['extraId', 'cantidad'],
               properties: {
-                extraId:  { type: 'string', format: 'uuid' },
+                extraId: { type: 'string', format: 'uuid' },
                 cantidad: { type: 'integer', minimum: 1, example: 1 },
               },
             },
@@ -150,8 +150,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         type: 'object',
         required: ['reservaId', 'kmSalida'],
         properties: {
-          reservaId:     { type: 'string', format: 'uuid', description: 'ID de reserva en estado CONFIRMADA' },
-          kmSalida:      { type: 'number', example: 12500, description: 'Kilometraje actual del vehículo al salir' },
+          reservaId: { type: 'string', format: 'uuid', description: 'ID de reserva en estado CONFIRMADA' },
+          kmSalida: { type: 'number', example: 12500, description: 'Kilometraje actual del vehículo al salir' },
           observaciones: { type: 'string', example: 'Vehículo en perfectas condiciones' },
         },
         example: {
@@ -164,16 +164,16 @@ Registro → Login → Buscar vehículo → Crear reserva
         type: 'object',
         required: ['alquilerId', 'kmEntrada', 'estadoVehiculo'],
         properties: {
-          alquilerId:     { type: 'string', format: 'uuid', description: 'ID del alquiler activo' },
-          kmEntrada:      { type: 'number', example: 12850, description: 'Kilometraje al momento de la devolución' },
+          alquilerId: { type: 'string', format: 'uuid', description: 'ID del alquiler activo' },
+          kmEntrada: { type: 'number', example: 12850, description: 'Kilometraje al momento de la devolución' },
           estadoVehiculo: {
             type: 'string',
             enum: ['EXCELENTE', 'BUENO', 'REGULAR', 'DAÑADO'],
             example: 'BUENO',
             description: 'Estado visual del vehículo al regresar',
           },
-          cargoExtra:     { type: 'number', example: 0, description: 'Cargo adicional si aplica (daños, combustible, etc.)' },
-          observaciones:  { type: 'string', example: 'Sin novedad' },
+          cargoExtra: { type: 'number', example: 0, description: 'Cargo adicional si aplica (daños, combustible, etc.)' },
+          observaciones: { type: 'string', example: 'Sin novedad' },
         },
         example: {
           alquilerId: '<uuid-alquiler-activo>',
@@ -187,8 +187,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         type: 'object',
         required: ['reservaId', 'monto', 'metodoPago'],
         properties: {
-          reservaId:  { type: 'string', format: 'uuid', description: 'ID de la reserva a pagar' },
-          monto:      { type: 'number', example: 220.00, description: 'Monto total a pagar (debe cubrir el total de la reserva)' },
+          reservaId: { type: 'string', format: 'uuid', description: 'ID de la reserva a pagar' },
+          monto: { type: 'number', example: 220.00, description: 'Monto total a pagar (debe cubrir el total de la reserva)' },
           metodoPago: {
             type: 'string',
             enum: ['EFECTIVO', 'TARJETA_CREDITO', 'TARJETA_DEBITO', 'TRANSFERENCIA', 'PAYPAL'],
@@ -205,7 +205,7 @@ Registro → Login → Buscar vehículo → Crear reserva
         type: 'object',
         required: ['reservaId'],
         properties: {
-          reservaId:     { type: 'string', format: 'uuid', description: 'ID de la reserva pagada' },
+          reservaId: { type: 'string', format: 'uuid', description: 'ID de la reserva pagada' },
           observaciones: { type: 'string', example: 'Factura correspondiente al alquiler de septiembre 2026' },
         },
         example: {
@@ -217,16 +217,16 @@ Registro → Login → Buscar vehículo → Crear reserva
         type: 'object',
         required: ['placa', 'color', 'anio', 'precioDia', 'modeloId', 'categoriaId', 'agenciaId', 'tipoCombustibleId', 'tipoTransmisionId'],
         properties: {
-          placa:             { type: 'string', example: 'QUI-1234', description: 'Placa única del vehículo' },
-          color:             { type: 'string', example: 'Blanco' },
-          anio:              { type: 'integer', example: 2023, minimum: 1990 },
-          kilometraje:       { type: 'integer', example: 0, minimum: 0, default: 0 },
-          precioDia:         { type: 'number', example: 55.00, description: 'Precio por día en USD' },
-          numeroPasajeros:   { type: 'integer', example: 5, minimum: 1, maximum: 20, default: 5 },
-          descripcion:       { type: 'string', example: 'Toyota Corolla automático, aire acondicionado' },
-          modeloId:          { type: 'string', format: 'uuid', description: 'UUID obtenido de GET /api/v1/modelos', example: 'ad604f3c-66cb-436c-b67f-36dda9f6fbde' },
-          categoriaId:       { type: 'string', format: 'uuid', description: 'UUID obtenido de GET /api/v1/categorias', example: '772e53f9-c302-4734-bf00-d8a96049e88c' },
-          agenciaId:         { type: 'string', description: 'ID de la agencia (ej: ag-quito-norte-001)', example: 'ag-quito-norte-001' },
+          placa: { type: 'string', example: 'QUI-1234', description: 'Placa única del vehículo' },
+          color: { type: 'string', example: 'Blanco' },
+          anio: { type: 'integer', example: 2023, minimum: 1990 },
+          kilometraje: { type: 'integer', example: 0, minimum: 0, default: 0 },
+          precioDia: { type: 'number', example: 55.00, description: 'Precio por día en USD' },
+          numeroPasajeros: { type: 'integer', example: 5, minimum: 1, maximum: 20, default: 5 },
+          descripcion: { type: 'string', example: 'Toyota Corolla automático, aire acondicionado' },
+          modeloId: { type: 'string', format: 'uuid', description: 'UUID obtenido de GET /api/v1/modelos', example: 'ad604f3c-66cb-436c-b67f-36dda9f6fbde' },
+          categoriaId: { type: 'string', format: 'uuid', description: 'UUID obtenido de GET /api/v1/categorias', example: '772e53f9-c302-4734-bf00-d8a96049e88c' },
+          agenciaId: { type: 'string', description: 'ID de la agencia (ej: ag-quito-norte-001)', example: 'ag-quito-norte-001' },
           tipoCombustibleId: { type: 'string', format: 'uuid', description: 'UUID obtenido de GET /api/v1/tipos-combustible', example: '562ce0dc-3090-419e-9752-92ffc92df14e' },
           tipoTransmisionId: { type: 'string', format: 'uuid', description: 'UUID obtenido de GET /api/v1/tipos-transmision', example: '5ed4e7b4-f07b-4577-91ed-74885b3917e0' },
         },
@@ -249,15 +249,15 @@ Registro → Login → Buscar vehículo → Crear reserva
         type: 'object',
         description: 'Todos los campos son opcionales — envía solo los que deseas modificar',
         properties: {
-          placa:             { type: 'string', example: 'QUI-1234' },
-          color:             { type: 'string', example: 'Negro' },
-          anio:              { type: 'integer', example: 2024 },
-          kilometraje:       { type: 'integer', example: 5000 },
-          precioDia:         { type: 'number', example: 65.00 },
-          numeroPasajeros:   { type: 'integer', example: 5 },
-          descripcion:       { type: 'string' },
-          status:            { type: 'string', enum: ['DISPONIBLE', 'RESERVADO', 'EN_USO', 'MANTENIMIENTO', 'INACTIVO'], example: 'DISPONIBLE' },
-          isActive:          { type: 'boolean', example: true },
+          placa: { type: 'string', example: 'QUI-1234' },
+          color: { type: 'string', example: 'Negro' },
+          anio: { type: 'integer', example: 2024 },
+          kilometraje: { type: 'integer', example: 5000 },
+          precioDia: { type: 'number', example: 65.00 },
+          numeroPasajeros: { type: 'integer', example: 5 },
+          descripcion: { type: 'string' },
+          status: { type: 'string', enum: ['DISPONIBLE', 'RESERVADO', 'EN_USO', 'MANTENIMIENTO', 'INACTIVO'], example: 'DISPONIBLE' },
+          isActive: { type: 'boolean', example: true },
         },
         example: { precioDia: 65.00, descripcion: 'Vehículo revisado y actualizado' },
       },
@@ -265,12 +265,12 @@ Registro → Login → Buscar vehículo → Crear reserva
         type: 'object',
         required: ['nombre', 'direccion', 'empresaId', 'ciudadId'],
         properties: {
-          nombre:    { type: 'string', example: 'Quito Sur' },
+          nombre: { type: 'string', example: 'Quito Sur' },
           direccion: { type: 'string', example: 'Av. Maldonado y Morán Valverde' },
-          telefono:  { type: 'string', example: '+593 2 2999888' },
-          email:     { type: 'string', example: 'quitosur@rentcarecuador.com' },
+          telefono: { type: 'string', example: '+593 2 2999888' },
+          email: { type: 'string', example: 'quitosur@rentcarecuador.com' },
           empresaId: { type: 'string', format: 'uuid', description: 'UUID de GET /api/v1/empresas', example: 'ae6c6b93-b12b-43ec-af54-c882c2cfb3d8' },
-          ciudadId:  { type: 'string', format: 'uuid', description: 'UUID de GET /api/v1/catalogos/ciudades', example: '3e266dbf-040f-46ed-b530-420b737a16fa' },
+          ciudadId: { type: 'string', format: 'uuid', description: 'UUID de GET /api/v1/catalogos/ciudades', example: '3e266dbf-040f-46ed-b530-420b737a16fa' },
         },
         example: {
           nombre: 'Quito Sur',
@@ -285,9 +285,9 @@ Registro → Login → Buscar vehículo → Crear reserva
         type: 'object',
         required: ['nombre', 'ruc'],
         properties: {
-          nombre:   { type: 'string', example: 'SpeedRent Ecuador' },
-          ruc:      { type: 'string', example: '1791111111001', description: 'RUC único de la empresa (13 dígitos)' },
-          email:    { type: 'string', example: 'info@speedrent.ec' },
+          nombre: { type: 'string', example: 'SpeedRent Ecuador' },
+          ruc: { type: 'string', example: '1791111111001', description: 'RUC único de la empresa (13 dígitos)' },
+          email: { type: 'string', example: 'info@speedrent.ec' },
           telefono: { type: 'string', example: '+593 2 3333333' },
         },
         example: {
@@ -314,7 +314,7 @@ Registro → Login → Buscar vehículo → Crear reserva
         type: 'object',
         properties: {
           success: { type: 'boolean', example: true },
-          data:    { type: 'object', description: 'Datos de respuesta' },
+          data: { type: 'object', description: 'Datos de respuesta' },
         },
       },
       ErrorResponse: {
@@ -324,7 +324,7 @@ Registro → Login → Buscar vehículo → Crear reserva
           error: {
             type: 'object',
             properties: {
-              code:    { type: 'string', example: 'VALIDATION_ERROR' },
+              code: { type: 'string', example: 'VALIDATION_ERROR' },
               message: { type: 'string', example: 'Datos de entrada inválidos' },
             },
           },
@@ -356,20 +356,20 @@ Registro → Login → Buscar vehículo → Crear reserva
   },
   security: [{ bearerAuth: [] }],
   tags: [
-    { name: 'Auth',           description: '🔐 Autenticación, registro y perfil de usuario' },
-    { name: 'Vehículos',      description: '🚗 Gestión de flota — CRUD, marketplace y búsqueda por disponibilidad' },
-    { name: 'Agencias',       description: '🏢 Sucursales de alquiler (agencias)' },
-    { name: 'Empresas',       description: '🏦 Empresas propietarias de flotas' },
-    { name: 'Catálogos',      description: '📋 Datos de referencia — marcas, modelos, categorías, combustibles, extras, seguros, tarifas' },
-    { name: 'Clientes',       description: '👤 Perfiles de conductores (licencia + usuario)' },
-    { name: 'Usuarios',       description: '👥 Gestión de cuentas de usuario (admin)' },
-    { name: 'Reservas',       description: '📅 Reservas de vehículos — creación, consulta y cancelación' },
-    { name: 'Alquileres',     description: '🔑 Inicio del alquiler desde una reserva confirmada' },
-    { name: 'Devoluciones',   description: '↩️  Registro de devolución del vehículo' },
-    { name: 'Pagos',          description: '💳 Registro y consulta de pagos' },
-    { name: 'Facturas',       description: '🧾 Generación y consulta de facturas' },
+    { name: 'Auth', description: '🔐 Autenticación, registro y perfil de usuario' },
+    { name: 'Vehículos', description: '🚗 Gestión de flota — CRUD, marketplace y búsqueda por disponibilidad' },
+    { name: 'Agencias', description: '🏢 Sucursales de alquiler (agencias)' },
+    { name: 'Empresas', description: '🏦 Empresas propietarias de flotas' },
+    { name: 'Catálogos', description: '📋 Datos de referencia — marcas, modelos, categorías, combustibles, extras, seguros, tarifas' },
+    { name: 'Clientes', description: '👤 Perfiles de conductores (licencia + usuario)' },
+    { name: 'Usuarios', description: '👥 Gestión de cuentas de usuario (admin)' },
+    { name: 'Reservas', description: '📅 Reservas de vehículos — creación, consulta y cancelación' },
+    { name: 'Alquileres', description: '🔑 Inicio del alquiler desde una reserva confirmada' },
+    { name: 'Devoluciones', description: '↩️  Registro de devolución del vehículo' },
+    { name: 'Pagos', description: '💳 Registro y consulta de pagos' },
+    { name: 'Facturas', description: '🧾 Generación y consulta de facturas' },
     { name: 'Mantenimientos', description: '🔧 Gestión de mantenimientos de vehículos' },
-    { name: 'Auditoría',      description: '📊 Historial de acciones, Kardex de vehículos y Outbox de eventos EDA' },
+    { name: 'Auditoría', description: '📊 Historial de acciones, Kardex de vehículos y Outbox de eventos EDA' },
   ],
   paths: {
 
@@ -428,10 +428,10 @@ Registro → Login → Buscar vehículo → Crear reserva
               schema: {
                 type: 'object',
                 properties: {
-                  nombres:   { type: 'string', example: 'Carlos Alberto' },
+                  nombres: { type: 'string', example: 'Carlos Alberto' },
                   apellidos: { type: 'string', example: 'Mendoza Vega' },
-                  telefono:  { type: 'string', example: '0987654321' },
-                  ciudadId:  { type: 'string', format: 'uuid' },
+                  telefono: { type: 'string', example: '0987654321' },
+                  ciudadId: { type: 'string', format: 'uuid' },
                 },
               },
             },
@@ -451,12 +451,12 @@ Registro → Login → Buscar vehículo → Crear reserva
         summary: 'Listar todos los vehículos',
         description: 'Lista completa de vehículos con relaciones (modelo, marca, categoría, agencia). **Solo admin.**',
         parameters: [
-          { name: 'page',  in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
           { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
         ],
         responses: {
-          200:  { description: '✅ Lista de vehículos' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Lista de vehículos' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
       post: {
@@ -493,9 +493,9 @@ Registro → Login → Buscar vehículo → Crear reserva
         description: '**Público.** Filtra vehículos que NO tengan reservas activas/confirmadas en el rango de fechas indicado.',
         security: [],
         parameters: [
-          { name: 'fechaInicio', in: 'query', required: true,  schema: { type: 'string', format: 'date', example: '2026-09-01' }, description: 'Fecha inicio en formato YYYY-MM-DD' },
-          { name: 'fechaFin',    in: 'query', required: true,  schema: { type: 'string', format: 'date', example: '2026-09-05' }, description: 'Fecha fin en formato YYYY-MM-DD' },
-          { name: 'agenciaId',   in: 'query', required: false, schema: { type: 'string' }, description: 'Filtrar por agencia (ej: ag-quito-norte-001)' },
+          { name: 'fechaInicio', in: 'query', required: true, schema: { type: 'string', format: 'date', example: '2026-09-01' }, description: 'Fecha inicio en formato YYYY-MM-DD' },
+          { name: 'fechaFin', in: 'query', required: true, schema: { type: 'string', format: 'date', example: '2026-09-05' }, description: 'Fecha fin en formato YYYY-MM-DD' },
+          { name: 'agenciaId', in: 'query', required: false, schema: { type: 'string' }, description: 'Filtrar por agencia (ej: ag-quito-norte-001)' },
           { name: 'categoriaId', in: 'query', required: false, schema: { type: 'string', format: 'uuid' }, description: 'Filtrar por categoría' },
         ],
         responses: {
@@ -511,8 +511,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         description: 'Retorna un vehículo con todos sus datos relacionados.',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
-          200:  { description: '✅ Vehículo encontrado' },
-          404:  { $ref: '#/components/responses/NotFound' },
+          200: { description: '✅ Vehículo encontrado' },
+          404: { $ref: '#/components/responses/NotFound' },
         },
       },
       patch: {
@@ -525,9 +525,9 @@ Registro → Login → Buscar vehículo → Crear reserva
           content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateVehiculoDto' } } },
         },
         responses: {
-          200:  { description: '✅ Vehículo actualizado' },
-          404:  { $ref: '#/components/responses/NotFound' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Vehículo actualizado' },
+          404: { $ref: '#/components/responses/NotFound' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
       delete: {
@@ -536,9 +536,9 @@ Registro → Login → Buscar vehículo → Crear reserva
         description: 'Marca el vehículo como eliminado. **Solo admin.**',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
-          200:  { description: '✅ Vehículo eliminado' },
-          404:  { $ref: '#/components/responses/NotFound' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Vehículo eliminado' },
+          404: { $ref: '#/components/responses/NotFound' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },
@@ -575,8 +575,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         summary: 'Detalle de agencia',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
         responses: {
-          200:  { description: '✅ Agencia encontrada' },
-          404:  { $ref: '#/components/responses/NotFound' },
+          200: { description: '✅ Agencia encontrada' },
+          404: { $ref: '#/components/responses/NotFound' },
         },
       },
       patch: {
@@ -589,8 +589,8 @@ Registro → Login → Buscar vehículo → Crear reserva
           content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateAgenciaDto' } } },
         },
         responses: {
-          200:  { description: '✅ Agencia actualizada' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Agencia actualizada' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
       delete: {
@@ -599,8 +599,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         description: '**Solo admin.**',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
         responses: {
-          200:  { description: '✅ Eliminada' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Eliminada' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },
@@ -637,8 +637,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         summary: 'Detalle de empresa',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
-          200:  { description: '✅ Empresa encontrada' },
-          404:  { $ref: '#/components/responses/NotFound' },
+          200: { description: '✅ Empresa encontrada' },
+          404: { $ref: '#/components/responses/NotFound' },
         },
       },
       patch: {
@@ -651,8 +651,8 @@ Registro → Login → Buscar vehículo → Crear reserva
           content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateEmpresaDto' } } },
         },
         responses: {
-          200:  { description: '✅ Actualizada' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Actualizada' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
       delete: {
@@ -661,8 +661,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         description: '**Solo admin.**',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
-          200:  { description: '✅ Eliminada' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Eliminada' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },
@@ -674,8 +674,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         summary: 'Listar todas las reservas',
         description: '**Solo admin.** Lista completa. Para ver solo las propias usa `GET /reservas/my`.',
         responses: {
-          200:  { description: '✅ Lista de reservas' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Lista de reservas' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
       post: {
@@ -700,8 +700,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         summary: 'Mis reservas',
         description: 'El cliente autenticado ve **solo sus propias reservas**. Los admins ven todas en `GET /reservas`.',
         responses: {
-          200:  { description: '✅ Reservas del cliente autenticado' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Reservas del cliente autenticado' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },
@@ -712,9 +712,9 @@ Registro → Login → Buscar vehículo → Crear reserva
         description: 'El cliente solo puede ver sus propias reservas. El admin puede ver cualquiera.',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
-          200:  { description: '✅ Detalle de la reserva' },
-          403:  { $ref: '#/components/responses/Forbidden' },
-          404:  { $ref: '#/components/responses/NotFound' },
+          200: { description: '✅ Detalle de la reserva' },
+          403: { $ref: '#/components/responses/Forbidden' },
+          404: { $ref: '#/components/responses/NotFound' },
         },
       },
       patch: {
@@ -727,9 +727,9 @@ Registro → Login → Buscar vehículo → Crear reserva
           content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateReservaStatusDto' } } },
         },
         responses: {
-          200:  { description: '✅ Estado actualizado' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
-          404:  { $ref: '#/components/responses/NotFound' },
+          200: { description: '✅ Estado actualizado' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+          404: { $ref: '#/components/responses/NotFound' },
         },
       },
     },
@@ -740,9 +740,9 @@ Registro → Login → Buscar vehículo → Crear reserva
         description: 'El cliente puede cancelar sus propias reservas. Se registra evento `RESERVA_CANCELADA` en outbox. Las reservas canceladas no bloquean disponibilidad.',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
-          200:  { description: '✅ Reserva cancelada' },
-          403:  { $ref: '#/components/responses/Forbidden' },
-          404:  { $ref: '#/components/responses/NotFound' },
+          200: { description: '✅ Reserva cancelada' },
+          403: { $ref: '#/components/responses/Forbidden' },
+          404: { $ref: '#/components/responses/NotFound' },
         },
       },
     },
@@ -754,8 +754,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         summary: 'Listar alquileres',
         description: '**Solo admin.**',
         responses: {
-          200:  { description: '✅ Lista de alquileres' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Lista de alquileres' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
       post: {
@@ -779,8 +779,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         summary: 'Detalle de alquiler',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
-          200:  { description: '✅ Alquiler encontrado' },
-          404:  { $ref: '#/components/responses/NotFound' },
+          200: { description: '✅ Alquiler encontrado' },
+          404: { $ref: '#/components/responses/NotFound' },
         },
       },
     },
@@ -792,8 +792,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         summary: 'Listar devoluciones',
         description: '**Solo admin.**',
         responses: {
-          200:  { description: '✅ Lista de devoluciones' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Lista de devoluciones' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
       post: {
@@ -817,8 +817,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         summary: 'Detalle de devolución',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
-          200:  { description: '✅ Devolución encontrada' },
-          404:  { $ref: '#/components/responses/NotFound' },
+          200: { description: '✅ Devolución encontrada' },
+          404: { $ref: '#/components/responses/NotFound' },
         },
       },
     },
@@ -830,8 +830,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         summary: 'Listar pagos',
         description: '**Solo admin.**',
         responses: {
-          200:  { description: '✅ Lista de pagos' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Lista de pagos' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
       post: {
@@ -855,8 +855,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         summary: 'Detalle de pago',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
-          200:  { description: '✅ Pago encontrado' },
-          404:  { $ref: '#/components/responses/NotFound' },
+          200: { description: '✅ Pago encontrado' },
+          404: { $ref: '#/components/responses/NotFound' },
         },
       },
     },
@@ -868,8 +868,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         summary: 'Listar facturas',
         description: '**Solo admin.**',
         responses: {
-          200:  { description: '✅ Lista de facturas' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Lista de facturas' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
       post: {
@@ -893,8 +893,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         summary: 'Detalle de factura',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
-          200:  { description: '✅ Factura encontrada' },
-          404:  { $ref: '#/components/responses/NotFound' },
+          200: { description: '✅ Factura encontrada' },
+          404: { $ref: '#/components/responses/NotFound' },
         },
       },
     },
@@ -907,8 +907,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         description: 'Lista todos los perfiles de conductor registrados. **Solo admin.**',
         security: [{ bearerAuth: [] }],
         responses: {
-          200:  { description: '✅ Lista de clientes con datos del usuario' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Lista de clientes con datos del usuario' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
       post: {
@@ -935,9 +935,9 @@ Registro → Login → Buscar vehículo → Crear reserva
         security: [{ bearerAuth: [] }],
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
-          200:  { description: '✅ Cliente con datos de usuario' },
-          404:  { $ref: '#/components/responses/NotFound' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Cliente con datos de usuario' },
+          404: { $ref: '#/components/responses/NotFound' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
       patch: {
@@ -953,7 +953,7 @@ Registro → Login → Buscar vehículo → Crear reserva
               schema: {
                 type: 'object',
                 properties: {
-                  numeroLicencia:    { type: 'string', example: 'LIC-EC-2027-001' },
+                  numeroLicencia: { type: 'string', example: 'LIC-EC-2027-001' },
                   fechaVencLicencia: { type: 'string', format: 'date', example: '2029-12-31' },
                 },
               },
@@ -961,8 +961,8 @@ Registro → Login → Buscar vehículo → Crear reserva
           },
         },
         responses: {
-          200:  { description: '✅ Cliente actualizado' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Cliente actualizado' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
       delete: {
@@ -972,8 +972,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         security: [{ bearerAuth: [] }],
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
-          200:  { description: '✅ Eliminado' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Eliminado' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },
@@ -986,12 +986,12 @@ Registro → Login → Buscar vehículo → Crear reserva
         description: 'Lista paginada de todos los usuarios. **Solo admin.**',
         security: [{ bearerAuth: [] }],
         parameters: [
-          { name: 'page',  in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
           { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
         ],
         responses: {
-          200:  { description: '✅ Lista paginada de usuarios (sin passwordHash)' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Lista paginada de usuarios (sin passwordHash)' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },
@@ -1003,9 +1003,9 @@ Registro → Login → Buscar vehículo → Crear reserva
         security: [{ bearerAuth: [] }],
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
-          200:  { description: '✅ Usuario encontrado' },
-          404:  { $ref: '#/components/responses/NotFound' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Usuario encontrado' },
+          404: { $ref: '#/components/responses/NotFound' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
       patch: {
@@ -1021,10 +1021,10 @@ Registro → Login → Buscar vehículo → Crear reserva
               schema: {
                 type: 'object',
                 properties: {
-                  nombres:   { type: 'string' },
+                  nombres: { type: 'string' },
                   apellidos: { type: 'string' },
-                  telefono:  { type: 'string' },
-                  isActive:  { type: 'boolean', description: '`false` = desactiva la cuenta (no puede hacer login)' },
+                  telefono: { type: 'string' },
+                  isActive: { type: 'boolean', description: '`false` = desactiva la cuenta (no puede hacer login)' },
                 },
               },
               example: { isActive: true, telefono: '0987654321' },
@@ -1032,8 +1032,8 @@ Registro → Login → Buscar vehículo → Crear reserva
           },
         },
         responses: {
-          200:  { description: '✅ Usuario actualizado' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Usuario actualizado' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
       delete: {
@@ -1043,8 +1043,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         security: [{ bearerAuth: [] }],
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
-          200:  { description: '✅ Cuenta desactivada' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Cuenta desactivada' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },
@@ -1057,12 +1057,12 @@ Registro → Login → Buscar vehículo → Crear reserva
         description: 'Lista paginada. **Solo admin.**',
         security: [{ bearerAuth: [] }],
         parameters: [
-          { name: 'page',  in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
           { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
         ],
         responses: {
-          200:  { description: '✅ Lista de mantenimientos' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Lista de mantenimientos' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
       post: {
@@ -1078,13 +1078,13 @@ Registro → Login → Buscar vehículo → Crear reserva
                 type: 'object',
                 required: ['vehiculoId', 'tipo', 'descripcion', 'fechaInicio'],
                 properties: {
-                  vehiculoId:  { type: 'string', format: 'uuid', description: 'UUID del vehículo' },
-                  tipo:        { type: 'string', enum: ['PREVENTIVO', 'CORRECTIVO', 'REVISION'], example: 'PREVENTIVO' },
+                  vehiculoId: { type: 'string', format: 'uuid', description: 'UUID del vehículo' },
+                  tipo: { type: 'string', enum: ['PREVENTIVO', 'CORRECTIVO', 'REVISION'], example: 'PREVENTIVO' },
                   descripcion: { type: 'string', example: 'Cambio de aceite y filtros' },
                   fechaInicio: { type: 'string', format: 'date', example: '2026-05-01' },
-                  fechaFin:    { type: 'string', format: 'date', example: '2026-05-03' },
-                  costo:       { type: 'number', example: 85.00 },
-                  tecnico:     { type: 'string', example: 'Carlos Técnico' },
+                  fechaFin: { type: 'string', format: 'date', example: '2026-05-03' },
+                  costo: { type: 'number', example: 85.00 },
+                  tecnico: { type: 'string', example: 'Carlos Técnico' },
                 },
               },
               example: {
@@ -1113,8 +1113,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         security: [{ bearerAuth: [] }],
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
-          200:  { description: '✅ Mantenimiento encontrado' },
-          404:  { $ref: '#/components/responses/NotFound' },
+          200: { description: '✅ Mantenimiento encontrado' },
+          404: { $ref: '#/components/responses/NotFound' },
         },
       },
       patch: {
@@ -1130,9 +1130,9 @@ Registro → Login → Buscar vehículo → Crear reserva
               schema: {
                 type: 'object',
                 properties: {
-                  isActive:    { type: 'boolean', example: false, description: '`false` = finalizar mantenimiento, restaura vehículo a DISPONIBLE' },
-                  fechaFin:    { type: 'string', format: 'date', example: '2026-05-03' },
-                  costo:       { type: 'number', example: 95.00 },
+                  isActive: { type: 'boolean', example: false, description: '`false` = finalizar mantenimiento, restaura vehículo a DISPONIBLE' },
+                  fechaFin: { type: 'string', format: 'date', example: '2026-05-03' },
+                  costo: { type: 'number', example: 95.00 },
                 },
               },
               example: { isActive: false, fechaFin: '2026-05-03', costo: 95.00 },
@@ -1140,8 +1140,8 @@ Registro → Login → Buscar vehículo → Crear reserva
           },
         },
         responses: {
-          200:  { description: '✅ Mantenimiento actualizado' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Mantenimiento actualizado' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
       delete: {
@@ -1151,8 +1151,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         security: [{ bearerAuth: [] }],
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
-          200:  { description: '✅ Eliminado' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Eliminado' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },
@@ -1164,8 +1164,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         security: [{ bearerAuth: [] }],
         parameters: [{ name: 'vehiculoId', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
-          200:  { description: '✅ Lista de mantenimientos del vehículo' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Lista de mantenimientos del vehículo' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },
@@ -1178,12 +1178,12 @@ Registro → Login → Buscar vehículo → Crear reserva
         description: '**Solo admin.** Registro de acciones críticas del sistema.',
         security: [{ bearerAuth: [] }],
         parameters: [
-          { name: 'page',  in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
           { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
         ],
         responses: {
-          200:  { description: '✅ Historial paginado' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Historial paginado' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },
@@ -1194,12 +1194,12 @@ Registro → Login → Buscar vehículo → Crear reserva
         description: '**Solo admin.** Registro de cambios de estado de cada vehículo.',
         security: [{ bearerAuth: [] }],
         parameters: [
-          { name: 'page',  in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
           { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
         ],
         responses: {
-          200:  { description: '✅ Kardex paginado' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Kardex paginado' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },
@@ -1210,36 +1210,36 @@ Registro → Login → Buscar vehículo → Crear reserva
         description: '**Solo admin.** Eventos registrados para futura integración con mensajería (RabbitMQ, Kafka, etc.). Eventos: `RESERVA_CREADA`, `RESERVA_CANCELADA`, `PAGO_REGISTRADO`, `ALQUILER_INICIADO`, `VEHICULO_DEVUELTO`, `FACTURA_GENERADA`.',
         security: [{ bearerAuth: [] }],
         parameters: [
-          { name: 'page',  in: 'query', schema: { type: 'integer', default: 1 } },
+          { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
           { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
         ],
         responses: {
-          200:  { description: '✅ Eventos outbox paginados' },
-          401:  { $ref: '#/components/responses/Unauthorized' },
+          200: { description: '✅ Eventos outbox paginados' },
+          401: { $ref: '#/components/responses/Unauthorized' },
         },
       },
     },
 
     // ── Catálogos ─────────────────────────────────────────────────
-    '/api/v1/marcas':            { get: { tags: ['Catálogos'], summary: 'Marcas de vehículos',      security: [], responses: { 200: { description: '✅ Lista (Toyota, Chevrolet, Kia, Hyundai…)' } } } },
-    '/api/v1/modelos':           { get: { tags: ['Catálogos'], summary: 'Modelos de vehículos',     security: [], responses: { 200: { description: '✅ Lista con marca incluida' } } } },
-    '/api/v1/categorias':        { get: { tags: ['Catálogos'], summary: 'Categorías de vehículo',   security: [], responses: { 200: { description: '✅ Económico, Sedán, SUV, Pickup…' } } } },
-    '/api/v1/tipos-combustible': { get: { tags: ['Catálogos'], summary: 'Tipos de combustible',     security: [], responses: { 200: { description: '✅ Gasolina, Diésel, Híbrido, Eléctrico' } } } },
-    '/api/v1/tipos-transmision': { get: { tags: ['Catálogos'], summary: 'Tipos de transmisión',     security: [], responses: { 200: { description: '✅ Manual, Automático' } } } },
-    '/api/v1/estados-vehiculo':  { get: { tags: ['Catálogos'], summary: 'Estados de vehículo',      security: [], responses: { 200: { description: '✅ DISPONIBLE | RESERVADO | EN_USO | MANTENIMIENTO | INACTIVO' } } } },
-    '/api/v1/extras':            { get: { tags: ['Catálogos'], summary: 'Extras disponibles',        security: [], responses: { 200: { description: '✅ GPS, Silla de bebé, WiFi portátil…' } } } },
-    '/api/v1/seguros':           { get: { tags: ['Catálogos'], summary: 'Seguros disponibles',       security: [], responses: { 200: { description: '✅ Básico, Completo, Premium' } } } },
-    '/api/v1/tarifas':           { get: { tags: ['Catálogos'], summary: 'Tarifas especiales',        security: [], responses: { 200: { description: '✅ Estándar, Fin de semana, Corporativa' } } } },
-    '/api/v1/canales-venta':     { get: { tags: ['Catálogos'], summary: 'Canales de venta',          security: [], responses: { 200: { description: '✅ Web, App móvil, Mostrador' } } } },
-    '/api/v1/catalogos/provincias': { get: { tags: ['Catálogos'], summary: 'Provincias',             security: [], responses: { 200: { description: '✅ Pichincha, Guayas, Azuay…' } } } },
-    '/api/v1/catalogos/ciudades':   { get: { tags: ['Catálogos'], summary: 'Ciudades',               security: [], responses: { 200: { description: '✅ Quito, Guayaquil, Cuenca…' } } } },
-    '/api/v1/catalogos/marcas':             { get: { tags: ['Catálogos'], summary: 'Marcas (alias /catalogos)',            security: [], responses: { 200: { description: '✅ Lista' } } } },
-    '/api/v1/catalogos/modelos':            { get: { tags: ['Catálogos'], summary: 'Modelos (alias /catalogos)',           security: [], responses: { 200: { description: '✅ Lista' } } } },
-    '/api/v1/catalogos/categorias':         { get: { tags: ['Catálogos'], summary: 'Categorías (alias /catalogos)',        security: [], responses: { 200: { description: '✅ Lista' } } } },
-    '/api/v1/catalogos/tipos-combustible':  { get: { tags: ['Catálogos'], summary: 'Tipos combustible (alias /catalogos)', security: [], responses: { 200: { description: '✅ Lista' } } } },
-    '/api/v1/catalogos/tipos-transmision':  { get: { tags: ['Catálogos'], summary: 'Tipos transmisión (alias /catalogos)', security: [], responses: { 200: { description: '✅ Lista' } } } },
-    '/api/v1/catalogos/extras':             { get: { tags: ['Catálogos'], summary: 'Extras (alias /catalogos)',            security: [], responses: { 200: { description: '✅ Lista' } } } },
-    '/api/v1/catalogos/seguros':            { get: { tags: ['Catálogos'], summary: 'Seguros (alias /catalogos)',           security: [], responses: { 200: { description: '✅ Lista' } } } },
-    '/api/v1/catalogos/tarifas':            { get: { tags: ['Catálogos'], summary: 'Tarifas (alias /catalogos)',           security: [], responses: { 200: { description: '✅ Lista' } } } },
+    '/api/v1/marcas': { get: { tags: ['Catálogos'], summary: 'Marcas de vehículos', security: [], responses: { 200: { description: '✅ Lista (Toyota, Chevrolet, Kia, Hyundai…)' } } } },
+    '/api/v1/modelos': { get: { tags: ['Catálogos'], summary: 'Modelos de vehículos', security: [], responses: { 200: { description: '✅ Lista con marca incluida' } } } },
+    '/api/v1/categorias': { get: { tags: ['Catálogos'], summary: 'Categorías de vehículo', security: [], responses: { 200: { description: '✅ Económico, Sedán, SUV, Pickup…' } } } },
+    '/api/v1/tipos-combustible': { get: { tags: ['Catálogos'], summary: 'Tipos de combustible', security: [], responses: { 200: { description: '✅ Gasolina, Diésel, Híbrido, Eléctrico' } } } },
+    '/api/v1/tipos-transmision': { get: { tags: ['Catálogos'], summary: 'Tipos de transmisión', security: [], responses: { 200: { description: '✅ Manual, Automático' } } } },
+    '/api/v1/estados-vehiculo': { get: { tags: ['Catálogos'], summary: 'Estados de vehículo', security: [], responses: { 200: { description: '✅ DISPONIBLE | RESERVADO | EN_USO | MANTENIMIENTO | INACTIVO' } } } },
+    '/api/v1/extras': { get: { tags: ['Catálogos'], summary: 'Extras disponibles', security: [], responses: { 200: { description: '✅ GPS, Silla de bebé, WiFi portátil…' } } } },
+    '/api/v1/seguros': { get: { tags: ['Catálogos'], summary: 'Seguros disponibles', security: [], responses: { 200: { description: '✅ Básico, Completo, Premium' } } } },
+    '/api/v1/tarifas': { get: { tags: ['Catálogos'], summary: 'Tarifas especiales', security: [], responses: { 200: { description: '✅ Estándar, Fin de semana, Corporativa' } } } },
+    '/api/v1/canales-venta': { get: { tags: ['Catálogos'], summary: 'Canales de venta', security: [], responses: { 200: { description: '✅ Web, App móvil, Mostrador' } } } },
+    '/api/v1/catalogos/provincias': { get: { tags: ['Catálogos'], summary: 'Provincias', security: [], responses: { 200: { description: '✅ Pichincha, Guayas, Azuay…' } } } },
+    '/api/v1/catalogos/ciudades': { get: { tags: ['Catálogos'], summary: 'Ciudades', security: [], responses: { 200: { description: '✅ Quito, Guayaquil, Cuenca…' } } } },
+    '/api/v1/catalogos/marcas': { get: { tags: ['Catálogos'], summary: 'Marcas (alias /catalogos)', security: [], responses: { 200: { description: '✅ Lista' } } } },
+    '/api/v1/catalogos/modelos': { get: { tags: ['Catálogos'], summary: 'Modelos (alias /catalogos)', security: [], responses: { 200: { description: '✅ Lista' } } } },
+    '/api/v1/catalogos/categorias': { get: { tags: ['Catálogos'], summary: 'Categorías (alias /catalogos)', security: [], responses: { 200: { description: '✅ Lista' } } } },
+    '/api/v1/catalogos/tipos-combustible': { get: { tags: ['Catálogos'], summary: 'Tipos combustible (alias /catalogos)', security: [], responses: { 200: { description: '✅ Lista' } } } },
+    '/api/v1/catalogos/tipos-transmision': { get: { tags: ['Catálogos'], summary: 'Tipos transmisión (alias /catalogos)', security: [], responses: { 200: { description: '✅ Lista' } } } },
+    '/api/v1/catalogos/extras': { get: { tags: ['Catálogos'], summary: 'Extras (alias /catalogos)', security: [], responses: { 200: { description: '✅ Lista' } } } },
+    '/api/v1/catalogos/seguros': { get: { tags: ['Catálogos'], summary: 'Seguros (alias /catalogos)', security: [], responses: { 200: { description: '✅ Lista' } } } },
+    '/api/v1/catalogos/tarifas': { get: { tags: ['Catálogos'], summary: 'Tarifas (alias /catalogos)', security: [], responses: { 200: { description: '✅ Lista' } } } },
   },
 };

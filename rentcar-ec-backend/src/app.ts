@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto';
 import path from 'path';
 import express from 'express';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 
 // ── Routers ───────────────────────────────────────────────────
 import { createAuthRouter }           from './modules/auth/auth.routes.js';
@@ -129,6 +130,28 @@ app.get('/', (_req, res) => {
     },
   });
 });
+
+// ── Rate limiting ─────────────────────────────────────────────
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: { code: 'RATE_LIMIT', message: 'Demasiados intentos. Espera 15 minutos e intenta de nuevo.' } },
+  skip: () => process.env.NODE_ENV === 'development',
+});
+
+const generalLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, error: { code: 'RATE_LIMIT', message: 'Demasiadas solicitudes. Espera un momento.' } },
+  skip: () => process.env.NODE_ENV === 'development',
+});
+
+app.use('/api/v1', generalLimiter);
+app.use('/api/v1/auth', authLimiter);
 
 // ── Rutas principales ─────────────────────────────────────────
 app.use('/api/v1/auth',           createAuthRouter(authController));
