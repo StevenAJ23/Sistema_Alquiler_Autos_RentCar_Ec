@@ -1,10 +1,11 @@
 import { z } from 'zod';
+import { zSoloLetras, zTelefonoOpcional } from '../../shared/utils/validation.utils.js';
 
 export const UpdateUsuarioSchema = z.object({
-  nombres:   z.string().trim().min(1).optional(),
-  apellidos: z.string().trim().min(1).optional(),
-  telefono:  z.string().trim().optional(),
-  ciudadId:  z.string().min(1).optional(),
+  nombres:   zSoloLetras('Nombres', 2, 100).optional(),
+  apellidos: zSoloLetras('Apellidos', 2, 100).optional(),
+  telefono:  zTelefonoOpcional,
+  ciudadId:  z.string().uuid('ID de ciudad inválido').optional(),
   isActive:  z.boolean().optional(),
 });
 

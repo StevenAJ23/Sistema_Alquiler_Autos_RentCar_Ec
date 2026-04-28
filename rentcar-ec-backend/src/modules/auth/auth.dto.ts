@@ -1,25 +1,32 @@
 import { z } from 'zod';
+import {
+  zSoloLetras,
+  zCedulaOpcional,
+  zTelefonoOpcional,
+} from '../../shared/utils/validation.utils.js';
 
 export const RegisterSchema = z.object({
-  email:     z.string().trim().email('Email inválido'),
-  password:  z.string().min(6, 'Mínimo 6 caracteres'),
-  nombres:   z.string().trim().min(1, 'Nombres requeridos'),
-  apellidos: z.string().trim().min(1, 'Apellidos requeridos'),
-  cedula:    z.string().trim().max(13).optional(),
-  telefono:  z.string().trim().optional(),
-  ciudadId:  z.string().uuid().optional(),
+  email:     z.string().trim().min(1, 'El email es requerido').email('Formato de email inválido'),
+  password:  z.string()
+               .min(6,   'La contraseña debe tener al menos 6 caracteres')
+               .max(100, 'La contraseña no puede superar 100 caracteres'),
+  nombres:   zSoloLetras('Nombres', 2, 100),
+  apellidos: zSoloLetras('Apellidos', 2, 100),
+  cedula:    zCedulaOpcional,
+  telefono:  zTelefonoOpcional,
+  ciudadId:  z.string().uuid('El ID de ciudad no es válido').optional(),
 });
 
 export const LoginSchema = z.object({
-  email:    z.string().trim().email(),
-  password: z.string().min(1),
+  email:    z.string().trim().min(1, 'El email es requerido').email('Formato de email inválido'),
+  password: z.string().min(1, 'La contraseña es requerida'),
 });
 
 export const UpdateProfileSchema = z.object({
-  nombres:   z.string().trim().min(1).optional(),
-  apellidos: z.string().trim().min(1).optional(),
-  telefono:  z.string().trim().optional(),
-  ciudadId:  z.string().min(1).optional(),
+  nombres:   zSoloLetras('Nombres', 2, 100).optional(),
+  apellidos: zSoloLetras('Apellidos', 2, 100).optional(),
+  telefono:  zTelefonoOpcional,
+  ciudadId:  z.string().uuid('El ID de ciudad no es válido').optional(),
 });
 
 export type RegisterDto      = z.infer<typeof RegisterSchema>;

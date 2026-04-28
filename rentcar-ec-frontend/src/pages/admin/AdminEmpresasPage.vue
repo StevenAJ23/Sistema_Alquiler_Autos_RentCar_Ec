@@ -62,6 +62,7 @@ import AdminTable from '@/components/admin/AdminTable.vue';
 import AdminFormModal from '@/components/admin/AdminFormModal.vue';
 import { useAdminEmpresas, useCreateEmpresa, useUpdateEmpresa, useDeleteEmpresa } from '@/composables/useAdmin';
 import type { Empresa } from '@/types/domain';
+import * as V from '@/utils/validators';
 
 const inputCls = 'input-base';
 
@@ -93,8 +94,21 @@ function close() { formError.value = null; Object.assign(modal, { open: false, i
 
 const isPending = computed(() => create.isPending.value || update.isPending.value);
 
+function validateEmpresa(): string {
+  const r = modal.row;
+  const checks = [
+    V.minLen(r.nombre, 3, 'El nombre'),
+    V.rucEc(r.ruc),
+    V.emailOpc(r.email),
+    V.telefonoOpc(r.telefono),
+  ];
+  return checks.find(e => !!e) ?? '';
+}
+
 async function handleSubmit() {
   formError.value = null;
+  const err = validateEmpresa();
+  if (err) { formError.value = err; return; }
   try {
     if (modal.id) await update.mutateAsync({ id: modal.id, ...modal.row });
     else          await create.mutateAsync({ ...modal.row });

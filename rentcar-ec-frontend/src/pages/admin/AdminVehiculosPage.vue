@@ -143,6 +143,7 @@ import { useVehiculos, useCreateVehiculo, useUpdateVehiculo, useDeleteVehiculo }
 import { apiClient } from '@/lib/api-client';
 import { adminService } from '@/services/admin.service';
 import type { Vehiculo, VehicleStatus, Modelo, Categoria, TipoCombustible, TipoTransmision, Agencia } from '@/types/domain';
+import * as V from '@/utils/validators';
 
 const inputCls = 'input-base';
 
@@ -238,8 +239,28 @@ function getImagenUrl(url: string | null | undefined): string {
 
 const isPending = computed(() => create.isPending.value || update.isPending.value);
 
+function validateVehiculo(): string {
+  const r = modal.row;
+  const checks: string[] = [
+    V.placaEc(r.placa),
+    V.soloLetras(r.color, 'Color'),
+    V.anioVehiculo(r.anio),
+    V.enteroNoNegativo(r.kilometraje, 'Kilometraje'),
+    V.numeroPositivo(r.precioDia, 'Precio/día'),
+    r.numeroPasajeros < 1 || r.numeroPasajeros > 20 ? 'Las plazas deben estar entre 1 y 20' : '',
+    V.reqStr(r.agenciaId,         'La agencia'),
+    V.reqStr(r.modeloId,          'El modelo'),
+    V.reqStr(r.categoriaId,       'La categoría'),
+    V.reqStr(r.tipoCombustibleId, 'El combustible'),
+    V.reqStr(r.tipoTransmisionId, 'La transmisión'),
+  ];
+  return checks.find(e => !!e) ?? '';
+}
+
 async function handleSubmit() {
   formError.value = null;
+  const err = validateVehiculo();
+  if (err) { formError.value = err; return; }
   try {
     let vehiculoId: string;
 

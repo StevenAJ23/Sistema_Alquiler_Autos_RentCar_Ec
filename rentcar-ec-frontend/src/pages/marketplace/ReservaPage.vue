@@ -31,15 +31,17 @@
             <h2 class="font-bold text-white mb-4">Fechas de alquiler</h2>
             <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Fecha inicio</label>
-                <input v-model="fechaInicio" type="date" required class="input-base" />
+                <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Fecha inicio *</label>
+                <input v-model="fechaInicio" type="date" required :min="today" class="input-base" />
+                <p v-if="fechaInicio && errFechaInicio" class="text-xs text-red-400 mt-1">{{ errFechaInicio }}</p>
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Fecha fin</label>
-                <input v-model="fechaFin" type="date" :min="fechaInicio" required class="input-base" />
+                <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5">Fecha fin *</label>
+                <input v-model="fechaFin" type="date" :min="fechaInicio || today" required class="input-base" />
+                <p v-if="fechaFin && errRangoFechas" class="text-xs text-red-400 mt-1">{{ errRangoFechas }}</p>
               </div>
             </div>
-            <p v-if="dias > 0" class="text-sm text-zinc-500 mt-3">
+            <p v-if="dias > 0 && !errRangoFechas" class="text-sm text-zinc-500 mt-3">
               <span class="text-orange-400 font-bold">{{ dias }}</span> día{{ dias !== 1 ? 's' : '' }} de alquiler
             </p>
           </div>
@@ -119,7 +121,7 @@
             </div>
             <button
               @click="handleSubmit"
-              :disabled="!fechaInicio || !fechaFin || dias < 1 || createReserva.isPending.value"
+              :disabled="!fechaInicio || !fechaFin || dias < 1 || !!errFechaInicio || !!errRangoFechas || createReserva.isPending.value"
               class="btn-primary w-full mt-5 text-sm flex items-center justify-center gap-2"
             >
               <Loader2 v-if="createReserva.isPending.value" class="w-4 h-4 animate-spin" />
@@ -139,6 +141,7 @@ import { Loader2, ChevronLeft, Car } from 'lucide-vue-next';
 import { useVehiculo } from '@/composables/useVehiculos';
 import { useCreateReserva } from '@/composables/useReservas';
 import type { ExtraEquipamiento, Seguro, CanalVenta, Vehiculo } from '@/types/domain';
+import * as V from '@/utils/validators';
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000/api/v1';
 const route  = useRoute();
@@ -147,6 +150,10 @@ const router = useRouter();
 const vehiculoId  = route.params.vehiculoId as string;
 const fechaInicio = ref(route.query.fechaInicio as string ?? '');
 const fechaFin    = ref(route.query.fechaFin    as string ?? '');
+
+const today = new Date().toISOString().split('T')[0];
+const errFechaInicio = computed(() => fechaInicio.value ? V.fechaHoyOFutura(fechaInicio.value, 'Fecha de inicio') : '');
+const errRangoFechas = computed(() => V.rangoFechas(fechaInicio.value, fechaFin.value));
 const seguroId    = ref('');
 const canalVentaId = ref('');
 const extrasSeleccionados = ref<string[]>([]);
@@ -190,6 +197,10 @@ const totalEstimado   = computed(() => tarifaBaseTotal.value + seguroTotal.value
 
 async function handleSubmit() {
   submitError.value = null;
+  const errFechaInicio = V.fechaHoyOFutura(fechaInicio.value, 'La fecha de inicio');
+  if (errFechaInicio) { submitError.value = errFechaInicio; return; }
+  const errRango = V.rangoFechas(fechaInicio.value, fechaFin.value);
+  if (errRango) { submitError.value = errRango; return; }
   if (!v.value?.agencia?.id) {
     submitError.value = 'No se pudo obtener la agencia del vehículo. Recarga la página.';
     return;

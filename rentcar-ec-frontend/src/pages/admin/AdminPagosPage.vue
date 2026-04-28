@@ -73,6 +73,7 @@ import AdminTable from '@/components/admin/AdminTable.vue';
 import AdminFormModal from '@/components/admin/AdminFormModal.vue';
 import { useAdminPagos, useCrearPago } from '@/composables/useAdmin';
 import type { Pago, PagoStatus } from '@/types/domain';
+import * as V from '@/utils/validators';
 
 const inputCls = 'input-base';
 
@@ -123,8 +124,19 @@ const formError = ref<string | null>(null);
 
 function close() { formError.value = null; Object.assign(modal, { open: false, form: makeForm() }); }
 
+function validatePago(): string {
+  const f = modal.form;
+  const checks = [
+    V.uuid(f.reservaId, 'El ID de reserva'),
+    V.numeroPositivo(f.monto, 'El monto'),
+  ];
+  return checks.find(e => !!e) ?? '';
+}
+
 async function handleSubmit() {
   formError.value = null;
+  const err = validatePago();
+  if (err) { formError.value = err; return; }
   try {
     const body: Record<string, unknown> = {
       reservaId: modal.form.reservaId,

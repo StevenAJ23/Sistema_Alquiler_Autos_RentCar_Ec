@@ -93,6 +93,7 @@ import {
   useAdminMantenimientos, useCrearMantenimiento,
   useUpdateMantenimiento, useDeleteMantenimiento,
 } from '@/composables/useAdmin';
+import * as V from '@/utils/validators';
 
 const inputCls = 'input-base';
 
@@ -147,8 +148,24 @@ function openCreate() { formError.value = null; Object.assign(modal, { open: tru
 function openEdit(row: Mantenimiento) { formError.value = null; Object.assign(modal, { open: true, id: row.id, form: makeForm(row) }); }
 function close() { formError.value = null; Object.assign(modal, { open: false, id: '', form: makeForm() }); }
 
+function validateMantenimiento(): string {
+  const f = modal.form;
+  const checks: string[] = [
+    !modal.id ? V.uuid(f.vehiculoId, 'El ID de vehículo') : '',
+    V.minLen(f.tipo,        3, 'El tipo'),
+    V.minLen(f.descripcion, 5, 'La descripción'),
+    V.reqStr(f.fechaInicio, 'La fecha de inicio'),
+    f.fechaFin ? V.rangoFechas(f.fechaInicio, f.fechaFin) : '',
+    V.numeroNoNegativo(f.costo ?? 0, 'El costo'),
+    f.tecnico ? V.soloLetrasOpc(f.tecnico, 'El nombre del técnico') : '',
+  ];
+  return checks.find(e => !!e) ?? '';
+}
+
 async function handleSubmit() {
   formError.value = null;
+  const err = validateMantenimiento();
+  if (err) { formError.value = err; return; }
   try {
     const body: Record<string, unknown> = {
       tipo:        modal.form.tipo,

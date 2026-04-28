@@ -100,6 +100,7 @@ import AdminTable from '@/components/admin/AdminTable.vue';
 import AdminFormModal from '@/components/admin/AdminFormModal.vue';
 import { useAdminAlquileres, useIniciarAlquiler, useRegistrarDevolucion } from '@/composables/useAdmin';
 import type { Alquiler, AlquilerStatus } from '@/types/domain';
+import * as V from '@/utils/validators';
 
 const inputCls = 'input-base';
 
@@ -136,6 +137,10 @@ const iniciarModal = reactive({ open: false, form: makeIniciarForm() });
 function closeIniciar() { iniciarError.value = null; Object.assign(iniciarModal, { open: false, form: makeIniciarForm() }); }
 async function handleIniciar() {
   iniciarError.value = null;
+  const errId = V.uuid(iniciarModal.form.reservaId, 'El ID de reserva');
+  if (errId) { iniciarError.value = errId; return; }
+  const errKm = V.enteroNoNegativo(iniciarModal.form.kmSalida, 'Kilometraje de salida');
+  if (errKm) { iniciarError.value = errKm; return; }
   try {
     const body: Record<string, unknown> = { reservaId: iniciarModal.form.reservaId, kmSalida: iniciarModal.form.kmSalida };
     if (iniciarModal.form.observaciones) body['observaciones'] = iniciarModal.form.observaciones;
@@ -155,6 +160,10 @@ function openDevolucion(a: Alquiler) { devError.value = null; Object.assign(devM
 function closeDev() { devError.value = null; Object.assign(devModal, { open: false, form: makeDevForm('', 0) }); }
 async function handleDevolucion() {
   devError.value = null;
+  const errKm = V.enteroNoNegativo(devModal.form.kmEntrada, 'Kilometraje de entrada');
+  if (errKm) { devError.value = errKm; return; }
+  const errCargo = V.numeroNoNegativo(devModal.form.cargoExtra, 'Cargo extra');
+  if (errCargo) { devError.value = errCargo; return; }
   try { await devolucion.mutateAsync({ ...devModal.form }); closeDev(); }
   catch (err: unknown) {
     devError.value = (err as { message?: string }).message ?? 'Error al registrar devolución';

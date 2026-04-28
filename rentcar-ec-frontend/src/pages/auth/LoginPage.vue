@@ -17,7 +17,7 @@
       </div>
 
       <div class="card p-7 shadow-2xl shadow-black/40">
-        <!-- Error -->
+        <!-- Error de servidor -->
         <div v-if="errorMessage" class="flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-xl p-3 mb-5">
           <AlertCircle class="w-4 h-4 shrink-0" />
           {{ errorMessage }}
@@ -28,18 +28,36 @@
             <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Email</label>
             <div class="relative">
               <Mail class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input v-model="form.email" type="email" placeholder="tu@email.com" required class="input-base pl-10" />
+              <input
+                v-model="form.email"
+                type="text"
+                placeholder="tu@email.com"
+                class="input-base pl-10"
+                :class="errors.email ? 'border-red-500 focus:border-red-500' : ''"
+                @blur="errors.email = V.email(form.email)"
+              />
             </div>
-            <p v-if="errors.email" class="text-xs text-red-400 mt-1">{{ errors.email }}</p>
+            <p v-if="errors.email" class="text-xs text-red-400 mt-1 flex items-center gap-1">
+              <AlertCircle class="w-3 h-3 shrink-0" />{{ errors.email }}
+            </p>
           </div>
 
           <div>
             <label class="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-1.5">Contraseña</label>
             <div class="relative">
               <Lock class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input v-model="form.password" type="password" placeholder="••••••••" required minlength="6" class="input-base pl-10" />
+              <input
+                v-model="form.password"
+                type="password"
+                placeholder="••••••••"
+                class="input-base pl-10"
+                :class="errors.password ? 'border-red-500 focus:border-red-500' : ''"
+                @blur="errors.password = V.password(form.password)"
+              />
             </div>
-            <p v-if="errors.password" class="text-xs text-red-400 mt-1">{{ errors.password }}</p>
+            <p v-if="errors.password" class="text-xs text-red-400 mt-1 flex items-center gap-1">
+              <AlertCircle class="w-3 h-3 shrink-0" />{{ errors.password }}
+            </p>
           </div>
 
           <button type="submit" :disabled="login.isPending.value" class="btn-primary w-full flex items-center justify-center gap-2 mt-2">
@@ -70,9 +88,10 @@
 import { reactive, computed } from 'vue';
 import { Car, Mail, Lock, AlertCircle, Loader2 } from 'lucide-vue-next';
 import { useLogin } from '@/composables/useAuth';
+import * as V from '@/utils/validators';
 
 const login = useLogin();
-const form = reactive({ email: '', password: '' });
+const form   = reactive({ email: '', password: '' });
 const errors = reactive({ email: '', password: '' });
 
 const errorMessage = computed(() => {
@@ -81,9 +100,9 @@ const errorMessage = computed(() => {
   return err?.response?.data?.error?.message ?? 'Error al iniciar sesión';
 });
 
-function validate() {
-  errors.email    = form.email    ? '' : 'El email es requerido';
-  errors.password = form.password.length >= 6 ? '' : 'Mínimo 6 caracteres';
+function validate(): boolean {
+  errors.email    = V.email(form.email);
+  errors.password = V.password(form.password);
   return !errors.email && !errors.password;
 }
 

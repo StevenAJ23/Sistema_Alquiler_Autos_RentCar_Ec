@@ -58,6 +58,7 @@ import AdminTable from '@/components/admin/AdminTable.vue';
 import AdminFormModal from '@/components/admin/AdminFormModal.vue';
 import { useAdminAgencias, useCreateAgencia, useUpdateAgencia, useDeleteAgencia } from '@/composables/useAdmin';
 import type { Agencia } from '@/types/domain';
+import * as V from '@/utils/validators';
 
 const inputCls = 'input-base';
 
@@ -89,8 +90,20 @@ function close() { formError.value = null; Object.assign(modal, { open: false, i
 
 const isPending = computed(() => create.isPending.value || update.isPending.value);
 
+function validateAgencia(): string {
+  const r = modal.row;
+  const checks = [
+    V.minLen(r.nombre, 3, 'El nombre'),
+    V.telefonoOpc(r.telefono),
+    V.emailOpc(r.email),
+  ];
+  return checks.find(e => !!e) ?? '';
+}
+
 async function handleSubmit() {
   formError.value = null;
+  const err = validateAgencia();
+  if (err) { formError.value = err; return; }
   try {
     if (modal.id) await update.mutateAsync({ id: modal.id, ...modal.row });
     else          await create.mutateAsync({ ...modal.row });
