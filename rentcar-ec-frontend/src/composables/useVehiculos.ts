@@ -18,12 +18,9 @@ export function useVehiculosMarketplace(params?: Partial<VehiculoSearchParams>) 
   });
 }
 
-export function useVehiculosSearch(params: VehiculoSearchParams) {
-  const enabled = Boolean(params.fechaInicio && params.fechaFin);
   return useQuery({
     queryKey: [...VEHICULOS_KEY, 'search', params],
     queryFn: () => vehiculosService.search(params),
-    enabled,
   });
 }
 

@@ -4,41 +4,35 @@
     <!-- Search bar -->
     <form
       @submit.prevent="handleSearch"
-      class="card p-3 flex flex-col sm:flex-row gap-2 items-end mb-8 shadow-xl shadow-black/30"
+      class="card p-3 flex flex-col sm:flex-row gap-2 items-end mb-8 shadow-xl shadow-black/30 border border-zinc-800"
     >
       <div class="flex-1 px-3 py-2">
-        <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Fecha inicio</label>
-        <input v-model="fechaInicio" type="date" required class="w-full bg-transparent text-white text-sm outline-none" />
+        <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Fecha inicio (Opcional)</label>
+        <input v-model="fechaInicio" type="date" class="w-full bg-transparent text-white text-sm outline-none cursor-pointer" />
       </div>
       <div class="w-px bg-zinc-800 hidden sm:block self-stretch" />
       <div class="flex-1 px-3 py-2">
-        <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Fecha fin</label>
-        <input v-model="fechaFin" type="date" :min="fechaInicio" required class="w-full bg-transparent text-white text-sm outline-none" />
+        <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Fecha fin (Opcional)</label>
+        <input v-model="fechaFin" type="date" :min="fechaInicio" class="w-full bg-transparent text-white text-sm outline-none cursor-pointer" />
       </div>
-      <button type="submit" class="btn-primary flex items-center gap-2 text-sm shrink-0 mx-1">
+      <button type="submit" class="btn-primary flex items-center justify-center gap-2 text-sm shrink-0 mx-1 min-w-[120px]">
         <Search class="w-4 h-4" /> Buscar
       </button>
     </form>
 
-    <!-- Empty state -->
-    <div v-if="!hasSearched" class="text-center py-24">
-      <div class="w-20 h-20 bg-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
-        <Search class="w-10 h-10 text-zinc-600" />
-      </div>
-      <p class="text-zinc-500 font-medium">Selecciona las fechas y haz clic en <span class="text-orange-400">Buscar</span></p>
-    </div>
-
     <!-- Loading -->
-    <div v-else-if="isLoading" class="flex items-center justify-center py-24">
-      <Loader2 class="w-8 h-8 animate-spin text-orange-500" />
+    <div v-if="isLoading" class="flex flex-col items-center justify-center py-32">
+      <Loader2 class="w-10 h-10 animate-spin text-orange-500 mb-4" />
+      <p class="text-zinc-500 animate-pulse">Cargando flota...</p>
     </div>
 
     <!-- No results -->
-    <div v-else-if="vehiculos.length === 0" class="text-center py-24">
+    <div v-else-if="vehiculos.length === 0" class="text-center py-24 bg-zinc-900/50 rounded-3xl border border-zinc-800">
       <div class="w-20 h-20 bg-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-4">
         <Car class="w-10 h-10 text-zinc-600" />
       </div>
-      <p class="text-zinc-400 font-medium mb-4">No hay vehículos disponibles para esas fechas</p>
+      <p class="text-zinc-400 font-medium mb-2">No hay vehículos disponibles</p>
+      <p class="text-zinc-600 text-sm mb-6">Prueba con otras fechas o contacta con nosotros.</p>
       <button @click="router.push('/')" class="btn-outline text-sm">Volver al inicio</button>
     </div>
 
