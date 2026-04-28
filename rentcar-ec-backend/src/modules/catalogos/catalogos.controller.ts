@@ -36,6 +36,13 @@ export class CatalogosController {
       if (!nombre || !marcaId) {
         return res.status(400).json({ success: false, error: { message: 'Nombre y marcaId son requeridos' } });
       }
+
+      // Evitar duplicados (409 Conflict) buscando si ya existe
+      const existing = await this.db.modelo.findFirst({ where: { nombre: { equals: nombre, mode: 'insensitive' }, marcaId } });
+      if (existing) {
+        return res.json({ success: true, data: existing });
+      }
+
       const data = await this.db.modelo.create({
         data: { nombre, marcaId },
         include: { marca: true }
@@ -50,6 +57,13 @@ export class CatalogosController {
       if (!nombre) {
         return res.status(400).json({ success: false, error: { message: 'El nombre de la marca es requerido' } });
       }
+
+      // Evitar duplicados buscando si ya existe
+      const existing = await this.db.marca.findFirst({ where: { nombre: { equals: nombre, mode: 'insensitive' } } });
+      if (existing) {
+        return res.json({ success: true, data: existing });
+      }
+
       const data = await this.db.marca.create({ data: { nombre } });
       res.status(201).json({ success: true, data });
     } catch (e) { next(e); }
