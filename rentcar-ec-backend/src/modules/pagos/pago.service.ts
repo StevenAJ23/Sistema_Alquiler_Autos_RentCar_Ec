@@ -32,6 +32,11 @@ export class PagoService {
 
     if ((reserva as any).status === 'PENDIENTE') {
       await this.reservaRepository.updateStatus(dto.reservaId, 'CONFIRMADA');
+      // Asegurar que el vehículo pase a estado RESERVADO
+      await this.reservaRepository.db.vehiculo.update({
+        where: { id: (reserva as any).vehiculoId },
+        data:  { status: 'RESERVADO' }
+      });
     }
 
     await this.outboxRepository.publicar({

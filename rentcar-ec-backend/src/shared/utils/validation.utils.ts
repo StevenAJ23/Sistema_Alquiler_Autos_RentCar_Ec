@@ -11,8 +11,8 @@ export const REGEX = {
   CEDULA_EC:    /^\d{10}$/,
   /** RUC ecuatoriano: exactamente 13 dígitos */
   RUC_EC:       /^\d{13}$/,
-  /** Placa Ecuador: 2-3 letras + guión opcional + 3-4 dígitos + letra opcional (ej: ABC-1234) */
-  PLACA_EC:     /^[A-Z]{2,3}-?\d{3,4}[A-Z]?$/,
+  /** Placa Ecuador: 3 letras + guión obligatorio + 3-4 dígitos (ej: ABC-1234) */
+  PLACA_EC:     /^[A-Z]{3}-\d{3,4}$/,
   /** Teléfono: dígitos, espacios, +, -, paréntesis; 7-20 chars */
   TELEFONO:     /^[\d\s+()\-]{7,20}$/,
   /** Fecha YYYY-MM-DD */

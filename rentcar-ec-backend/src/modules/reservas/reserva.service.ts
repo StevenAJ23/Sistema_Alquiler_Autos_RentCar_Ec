@@ -33,7 +33,11 @@ export class ReservaService {
     const fechaInicio = new Date(dto.fechaInicio);
     const fechaFin    = new Date(dto.fechaFin);
 
-    if (fechaFin <= fechaInicio) throw new ValidationException('fechaFin debe ser posterior a fechaInicio');
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    if (fechaInicio < hoy) throw new ValidationException('No puedes hacer reservas en fechas pasadas');
+
+    if (fechaFin <= fechaInicio) throw new ValidationException('La fecha de fin debe ser posterior a la fecha de inicio');
 
     const dias = this.calcularDias(fechaInicio, fechaFin);
     if (dias < 1) throw new ValidationException('La reserva debe ser de al menos 1 día');
@@ -108,6 +112,15 @@ export class ReservaService {
     }
 
     await this.reservaRepository.updateStatus(id, 'CANCELADA');
+    
+    // Si la reserva estaba confirmada, liberar el vehículo
+    if ((reserva as any).status === 'CONFIRMADA') {
+      await this.db.vehiculo.update({
+        where: { id: (reserva as any).vehiculoId },
+        data:  { status: 'DISPONIBLE' }
+      });
+    }
+
     await this.outboxRepository.publicar({ usuarioId, evento: 'RESERVA_CANCELADA', payload: { reservaId: id, codigoReserva: (reserva as any).codigoReserva } });
     await this.historialRepository.registrar({ usuarioId, accion: 'RESERVA_CANCELADA', entidad: 'Reserva', entidadId: id });
 
