@@ -60,7 +60,7 @@ const vehiculoService      = new VehiculoService(vehiculoRepo);
 const reservaService       = new ReservaService(reservaRepo, vehiculoRepo, outboxRepo, historialRepo, prisma);
 const alquilerService      = new AlquilerService(alquilerRepo, reservaRepo, outboxRepo, kardexRepo, prisma);
 const devolucionService    = new DevolucionService(alquilerRepo, reservaRepo, outboxRepo, kardexRepo, prisma);
-const pagoService          = new PagoService(pagoRepo, reservaRepo, outboxRepo, historialRepo);
+const pagoService          = new PagoService(pagoRepo, reservaRepo, outboxRepo, historialRepo, prisma);
 const facturaService       = new FacturaService(facturaRepo, reservaRepo, outboxRepo);
 const mantenimientoService = new MantenimientoService(mantenimientoRepo, kardexRepo, prisma);
 

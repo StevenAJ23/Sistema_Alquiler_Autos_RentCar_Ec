@@ -1,3 +1,4 @@
+import { PrismaClient } from '@prisma/client';
 import { PagoRepository } from './pago.repository.js';
 import { ReservaRepository } from '../reservas/reserva.repository.js';
 import { HistorialRepository } from '../historial/historial.repository.js';
@@ -13,6 +14,7 @@ export class PagoService {
     private readonly reservaRepository: ReservaRepository,
     private readonly outboxRepository: OutboxRepository,
     private readonly historialRepository: HistorialRepository,
+    private readonly db: PrismaClient,
   ) {}
 
   async crear(dto: CreatePagoDto) {
@@ -33,7 +35,7 @@ export class PagoService {
     if ((reserva as any).status === 'PENDIENTE') {
       await this.reservaRepository.updateStatus(dto.reservaId, 'CONFIRMADA');
       // Asegurar que el vehículo pase a estado RESERVADO
-      await this.reservaRepository.db.vehiculo.update({
+      await this.db.vehiculo.update({
         where: { id: (reserva as any).vehiculoId },
         data:  { status: 'RESERVADO' }
       });
