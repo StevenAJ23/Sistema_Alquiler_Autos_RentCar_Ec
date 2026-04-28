@@ -375,6 +375,7 @@ Registro → Login → Buscar vehículo → Crear reserva
   },
   security: [{ bearerAuth: [] }],
   tags: [
+    { name: 'Reto 2: Integración (Booking)', description: '🔗 Endpoints diseñados para ser consumidos por el prototipo de Booking' },
     { name: 'Auth', description: '🔐 Autenticación, registro y perfil de usuario' },
     { name: 'Vehículos', description: '🚗 Gestión de flota — CRUD, marketplace y búsqueda por disponibilidad' },
     { name: 'Agencias', description: '🏢 Sucursales de alquiler (agencias)' },
@@ -507,7 +508,7 @@ Registro → Login → Buscar vehículo → Crear reserva
     },
     '/api/v1/vehiculos/search': {
       get: {
-        tags: ['Vehículos'],
+        tags: ['Vehículos', 'Reto 2: Integración (Booking)'],
         summary: 'Buscar vehículos por disponibilidad',
         description: '**Público.** Filtra vehículos que NO tengan reservas activas/confirmadas en el rango de fechas indicado.',
         security: [],
@@ -525,7 +526,7 @@ Registro → Login → Buscar vehículo → Crear reserva
     },
     '/api/v1/vehiculos/{id}': {
       get: {
-        tags: ['Vehículos'],
+        tags: ['Vehículos', 'Reto 2: Integración (Booking)'],
         summary: 'Detalle de vehículo',
         description: 'Retorna un vehículo con todos sus datos relacionados.',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
@@ -698,7 +699,7 @@ Registro → Login → Buscar vehículo → Crear reserva
         },
       },
       post: {
-        tags: ['Reservas'],
+        tags: ['Reservas', 'Reto 2: Integración (Booking)'],
         summary: 'Crear reserva',
         description: 'Crea una nueva reserva. El backend valida disponibilidad del vehículo en el rango de fechas y **recalcula el total** automáticamente.',
         requestBody: {
@@ -754,7 +755,7 @@ Registro → Login → Buscar vehículo → Crear reserva
     },
     '/api/v1/reservas/{id}/cancel': {
       patch: {
-        tags: ['Reservas'],
+        tags: ['Reservas', 'Reto 2: Integración (Booking)'],
         summary: 'Cancelar reserva',
         description: 'El cliente puede cancelar sus propias reservas. Se registra evento `RESERVA_CANCELADA` en outbox. Las reservas canceladas no bloquean disponibilidad.',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
@@ -854,7 +855,7 @@ Registro → Login → Buscar vehículo → Crear reserva
         },
       },
       post: {
-        tags: ['Pagos'],
+        tags: ['Pagos', 'Reto 2: Integración (Booking)'],
         summary: 'Registrar pago',
         description: 'Registra el pago de una reserva. El monto debe cubrir el total calculado. Se emite evento `PAGO_REGISTRADO` en outbox.',
         requestBody: {
