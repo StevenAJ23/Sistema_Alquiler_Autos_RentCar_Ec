@@ -46,9 +46,14 @@
       @submit="handleIniciar"
     >
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">ID de Reserva <span class="text-red-500">*</span></label>
-        <input v-model="iniciarModal.form.reservaId" placeholder="UUID de la reserva confirmada" required :class="inputCls" />
-        <p class="text-xs text-gray-500 mt-1">La reserva debe estar en estado CONFIRMADA o PENDIENTE.</p>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Reserva <span class="text-red-500">*</span></label>
+        <select v-model="iniciarModal.form.reservaId" required :class="inputCls">
+          <option value="">— Seleccione una reserva —</option>
+          <option v-for="r in reservasDisponibles" :key="r.id" :value="r.id">
+            {{ r.codigoReserva }} - {{ r.usuario?.nombres }} {{ r.usuario?.apellidos }} ({{ r.vehiculo?.placa }})
+          </option>
+        </select>
+        <p class="text-xs text-gray-500 mt-1">Solo se muestran reservas en estado CONFIRMADA o PENDIENTE.</p>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Kilometraje de salida <span class="text-red-500">*</span></label>
@@ -98,8 +103,8 @@
 import { computed, reactive, ref } from 'vue';
 import AdminTable from '@/components/admin/AdminTable.vue';
 import AdminFormModal from '@/components/admin/AdminFormModal.vue';
-import { useAdminAlquileres, useIniciarAlquiler, useRegistrarDevolucion } from '@/composables/useAdmin';
-import type { Alquiler, AlquilerStatus } from '@/types/domain';
+import { useAdminAlquileres, useIniciarAlquiler, useRegistrarDevolucion, useAdminReservas } from '@/composables/useAdmin';
+import type { Alquiler, AlquilerStatus, Reserva } from '@/types/domain';
 import * as V from '@/utils/validators';
 
 const inputCls = 'input-base';
@@ -121,10 +126,16 @@ const columns = [
 ];
 
 const { data, isLoading } = useAdminAlquileres();
+const { data: dataRes } = useAdminReservas();
 const iniciar    = useIniciarAlquiler();
 const devolucion = useRegistrarDevolucion();
 
 const alquileres = computed<Alquiler[]>(() => Array.isArray(data.value) ? data.value as Alquiler[] : []);
+
+const reservasDisponibles = computed<Reserva[]>(() => {
+  const all = Array.isArray(dataRes.value) ? dataRes.value as Reserva[] : [];
+  return all.filter(r => r.status === 'CONFIRMADA' || r.status === 'PENDIENTE');
+});
 
 const iniciarError = ref<string | null>(null);
 const devError     = ref<string | null>(null);

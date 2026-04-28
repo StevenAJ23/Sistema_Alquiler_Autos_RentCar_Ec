@@ -50,8 +50,13 @@
       @submit="handleSubmit"
     >
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">ID Vehículo <span class="text-red-500">*</span></label>
-        <input v-model="modal.form.vehiculoId" placeholder="UUID del vehículo" :required="!modal.id" :disabled="!!modal.id" :class="[inputCls, modal.id ? 'opacity-50 cursor-not-allowed' : '']" />
+        <label class="block text-sm font-medium text-gray-700 mb-1">Vehículo <span class="text-red-500">*</span></label>
+        <select v-model="modal.form.vehiculoId" :required="!modal.id" :disabled="!!modal.id" :class="[inputCls, modal.id ? 'opacity-50 cursor-not-allowed' : '']">
+          <option value="">Seleccione un vehículo...</option>
+          <option v-for="v in listaVehiculos" :key="v.id" :value="v.id">
+            {{ v.placa }} - {{ v.modelo?.marca?.nombre }} {{ v.modelo?.nombre }}
+          </option>
+        </select>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Tipo <span class="text-red-500">*</span></label>
@@ -93,6 +98,8 @@ import {
   useAdminMantenimientos, useCrearMantenimiento,
   useUpdateMantenimiento, useDeleteMantenimiento,
 } from '@/composables/useAdmin';
+import { useVehiculos } from '@/composables/useVehiculos';
+import type { Vehiculo } from '@/types/domain';
 import * as V from '@/utils/validators';
 
 const inputCls = 'input-base';
@@ -120,6 +127,7 @@ const columns = [
 ];
 
 const { data, isLoading } = useAdminMantenimientos();
+const { data: dataVeh } = useVehiculos(1, 100); // Traemos una buena cantidad de vehículos
 const crear  = useCrearMantenimiento();
 const update = useUpdateMantenimiento();
 const del    = useDeleteMantenimiento();
@@ -127,6 +135,11 @@ const del    = useDeleteMantenimiento();
 const mantenimientos = computed<Mantenimiento[]>(() =>
   Array.isArray(data.value) ? data.value as Mantenimiento[] : []
 );
+
+const listaVehiculos = computed<Vehiculo[]>(() => {
+  const d = dataVeh.value as { data?: { data?: Vehiculo[] } | Vehiculo[] } | undefined;
+  return (d?.data as { data?: Vehiculo[] })?.data ?? (d?.data as Vehiculo[]) ?? [];
+});
 
 function makeForm(row?: Mantenimiento) {
   return {

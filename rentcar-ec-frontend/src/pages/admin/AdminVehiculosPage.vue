@@ -285,7 +285,7 @@ async function handleSubmit() {
     if (imagenFile.value && vehiculoId) {
       const fd = new FormData();
       fd.append('imagen', imagenFile.value);
-      await apiClient.uploadFile(`/vehiculos/${vehiculoId}/imagen`, fd);
+      await apiClient.uploadFile(`vehiculos/${vehiculoId}/imagen`, fd);
     }
 
     close();

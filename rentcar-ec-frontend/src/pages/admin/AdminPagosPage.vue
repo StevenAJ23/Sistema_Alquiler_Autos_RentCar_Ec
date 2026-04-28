@@ -41,8 +41,13 @@
       @submit="handleSubmit"
     >
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">ID de Reserva <span class="text-red-500">*</span></label>
-        <input v-model="modal.form.reservaId" placeholder="UUID de la reserva" required :class="inputCls" />
+        <label class="block text-sm font-medium text-gray-700 mb-1">Reserva <span class="text-red-500">*</span></label>
+        <select v-model="modal.form.reservaId" required :class="inputCls">
+          <option value="">— Seleccione una reserva —</option>
+          <option v-for="r in reservasDisponibles" :key="r.id" :value="r.id">
+            {{ r.codigoReserva }} - {{ r.usuario?.nombres }} {{ r.usuario?.apellidos }} ({{ r.vehiculo?.placa }})
+          </option>
+        </select>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Monto ($) <span class="text-red-500">*</span></label>
@@ -71,8 +76,8 @@
 import { computed, reactive, ref } from 'vue';
 import AdminTable from '@/components/admin/AdminTable.vue';
 import AdminFormModal from '@/components/admin/AdminFormModal.vue';
-import { useAdminPagos, useCrearPago } from '@/composables/useAdmin';
-import type { Pago, PagoStatus } from '@/types/domain';
+import { useAdminPagos, useCrearPago, useAdminReservas } from '@/composables/useAdmin';
+import type { Pago, PagoStatus, Reserva } from '@/types/domain';
 import * as V from '@/utils/validators';
 
 const inputCls = 'input-base';
@@ -111,9 +116,15 @@ const columns = [
 ];
 
 const { data, isLoading } = useAdminPagos();
+const { data: dataRes } = useAdminReservas();
 const crear = useCrearPago();
 
 const pagos = computed<Pago[]>(() => Array.isArray(data.value) ? data.value as Pago[] : []);
+
+const reservasDisponibles = computed<Reserva[]>(() => {
+  const all = Array.isArray(dataRes.value) ? dataRes.value as Reserva[] : [];
+  return all.filter(r => r.status === 'PENDIENTE' || r.status === 'CONFIRMADA' || r.status === 'ACTIVA');
+});
 
 function makeForm() {
   return { reservaId: '', monto: 0, metodoPago: 'EFECTIVO', referencia: '' };

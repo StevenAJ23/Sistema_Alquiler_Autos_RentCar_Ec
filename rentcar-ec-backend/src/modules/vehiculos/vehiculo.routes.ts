@@ -10,11 +10,11 @@ export function createVehiculoRouter(controller: VehiculoController): Router {
 
   router.get('/marketplace', controller.marketplace);
   router.get('/search',      controller.search);
+  router.post('/:id/imagen',  authenticate, requireAdmin, uploadVehiculo, controller.uploadImagen);
   router.get('/:id',         controller.getById);
   router.get('/',            authenticate, requireAdmin, controller.list);
 
   router.post('/',            authenticate, requireAdmin, validateBody(CreateVehiculoSchema), controller.create);
-  router.post('/:id/imagen',  authenticate, requireAdmin, uploadVehiculo, controller.uploadImagen);
   router.patch('/:id',        authenticate, requireAdmin, validateBody(UpdateVehiculoSchema), controller.update);
   router.delete('/:id',       authenticate, requireAdmin, controller.remove);
 

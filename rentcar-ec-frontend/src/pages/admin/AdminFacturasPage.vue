@@ -49,12 +49,22 @@
       @submit="handleSubmit"
     >
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">ID de Reserva <span class="text-red-500">*</span></label>
-        <input v-model="modal.form.reservaId" placeholder="UUID de la reserva" required :class="inputCls" />
+        <label class="block text-sm font-medium text-gray-700 mb-1">Reserva <span class="text-red-500">*</span></label>
+        <select v-model="modal.form.reservaId" required :class="inputCls">
+          <option value="">— Seleccione una reserva —</option>
+          <option v-for="r in reservasDisponibles" :key="r.id" :value="r.id">
+            {{ r.codigoReserva }} - {{ r.usuario?.nombres }} {{ r.usuario?.apellidos }}
+          </option>
+        </select>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">ID de Pago (opcional)</label>
-        <input v-model="modal.form.pagoId" placeholder="UUID del pago vinculado" :class="inputCls" />
+        <label class="block text-sm font-medium text-gray-700 mb-1">Pago (opcional)</label>
+        <select v-model="modal.form.pagoId" :class="inputCls">
+          <option value="">— Seleccione un pago (opcional) —</option>
+          <option v-for="p in pagosDisponibles" :key="p.id" :value="p.id">
+            ${{ Number(p.monto).toFixed(2) }} - {{ p.metodoPago }} ({{ p.createdAt.slice(0,10) }})
+          </option>
+        </select>
       </div>
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">RUC del cliente</label>
@@ -121,8 +131,8 @@
 import { computed, reactive, ref } from 'vue';
 import AdminTable from '@/components/admin/AdminTable.vue';
 import AdminFormModal from '@/components/admin/AdminFormModal.vue';
-import { useAdminFacturas, useGenerarFactura } from '@/composables/useAdmin';
-import type { Factura } from '@/types/domain';
+import { useAdminFacturas, useGenerarFactura, useAdminReservas, useAdminPagos } from '@/composables/useAdmin';
+import type { Factura, Reserva, Pago } from '@/types/domain';
 
 const inputCls = 'input-base';
 
@@ -137,9 +147,25 @@ const columns = [
 ];
 
 const { data, isLoading } = useAdminFacturas();
+const { data: dataRes } = useAdminReservas();
+const { data: dataPag } = useAdminPagos();
 const generar = useGenerarFactura();
 
 const facturas = computed<Factura[]>(() => Array.isArray(data.value) ? data.value as Factura[] : []);
+
+const reservasDisponibles = computed<Reserva[]>(() => {
+  const all = Array.isArray(dataRes.value) ? dataRes.value as Reserva[] : [];
+  return all.filter(r => r.status !== 'CANCELADA');
+});
+
+const pagosDisponibles = computed<Pago[]>(() => {
+  const all = Array.isArray(dataPag.value) ? dataPag.value as Pago[] : [];
+  // Si hay una reserva seleccionada, filtramos solo los pagos de esa reserva
+  if (modal.form.reservaId) {
+    return all.filter(p => p.reservaId === modal.form.reservaId);
+  }
+  return all;
+});
 
 function makeForm() {
   return { reservaId: '', pagoId: '', rucCliente: '', razonSocial: '' };
