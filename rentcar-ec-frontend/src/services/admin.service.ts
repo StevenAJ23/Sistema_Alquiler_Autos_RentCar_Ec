@@ -12,27 +12,27 @@ export const adminService = {
 
   // Usuarios
   getUsuarios: (page = 1, limit = 20) =>
-    apiClient.get<ApiSuccess<PagedResult<Usuario>>>('/admin/usuarios', { page, limit }),
+    apiClient.get<ApiSuccess<PagedResult<Usuario>>>('/usuarios', { page, limit }),
 
   // Agencias
   getAgencias: () =>
-    apiClient.get<ApiSuccess<any>>('/admin/agencias'),
+    apiClient.get<ApiSuccess<any>>('/agencias'),
   createAgencia: (data: object) =>
-    apiClient.post<ApiSuccess<Agencia>>('/admin/agencias', data),
+    apiClient.post<ApiSuccess<Agencia>>('/agencias', data),
   updateAgencia: (id: string, data: object) =>
-    apiClient.patch<ApiSuccess<Agencia>>(`/admin/agencias/${id}`, data),
+    apiClient.patch<ApiSuccess<Agencia>>(`/agencias/${id}`, data),
   deleteAgencia: (id: string) =>
-    apiClient.delete<ApiSuccess<any>>(`/admin/agencias/${id}`),
+    apiClient.delete<ApiSuccess<any>>(`/agencias/${id}`),
 
   // Empresas
   getEmpresas: () =>
-    apiClient.get<ApiSuccess<any>>('/admin/empresas'),
+    apiClient.get<ApiSuccess<any>>('/empresas'),
   createEmpresa: (data: object) =>
-    apiClient.post<ApiSuccess<Empresa>>('/admin/empresas', data),
+    apiClient.post<ApiSuccess<Empresa>>('/empresas', data),
   updateEmpresa: (id: string, data: object) =>
-    apiClient.patch<ApiSuccess<Empresa>>(`/admin/empresas/${id}`, data),
+    apiClient.patch<ApiSuccess<Empresa>>(`/empresas/${id}`, data),
   deleteEmpresa: (id: string) =>
-    apiClient.delete<ApiSuccess<any>>(`/admin/empresas/${id}`),
+    apiClient.delete<ApiSuccess<any>>(`/empresas/${id}`),
 
   // Catálogos públicos
   getProvincias:    () => apiClient.get<ApiSuccess<Provincia[]>>('/provincias'),
