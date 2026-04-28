@@ -184,19 +184,29 @@ const combustibles = ref<TipoCombustible[]>([]);
 const transmisiones = ref<TipoTransmision[]>([]);
 const agencias     = ref<Agencia[]>([]);
 
+/** Extrae un array de una respuesta que puede ser array directo o paginada { data: [...] } */
+function extractArray(val: unknown): any[] {
+  if (!val) return [];
+  const d = (val as any)?.data;
+  if (Array.isArray(d)) return d;           // { success, data: [...] }
+  if (Array.isArray(d?.data)) return d.data; // { success, data: { data: [...], total } }
+  if (Array.isArray(val))     return val as any[];
+  return [];
+}
+
 onMounted(async () => {
   const [rm, rc, rcomb, rt, ra] = await Promise.allSettled([
     adminService.getModelos(),
     adminService.getCategorias(),
     adminService.getCombustibles(),
     adminService.getTransmisiones(),
-    apiClient.get<{ success: boolean; data: Agencia[] }>('/agencias'),
+    apiClient.get('/agencias'),
   ]);
-  if (rm.status === 'fulfilled')    modelos.value       = (rm.value as any)?.data ?? [];
-  if (rc.status === 'fulfilled')    categorias.value    = (rc.value as any)?.data ?? [];
-  if (rcomb.status === 'fulfilled') combustibles.value  = (rcomb.value as any)?.data ?? [];
-  if (rt.status === 'fulfilled')    transmisiones.value = (rt.value as any)?.data ?? [];
-  if (ra.status === 'fulfilled')    agencias.value      = (ra.value as any)?.data ?? [];
+  if (rm.status    === 'fulfilled') modelos.value       = extractArray(rm.value);
+  if (rc.status    === 'fulfilled') categorias.value    = extractArray(rc.value);
+  if (rcomb.status === 'fulfilled') combustibles.value  = extractArray(rcomb.value);
+  if (rt.status    === 'fulfilled') transmisiones.value = extractArray(rt.value);
+  if (ra.status    === 'fulfilled') agencias.value      = extractArray(ra.value);
 });
 
 function makeEmpty(row?: Vehiculo) {
