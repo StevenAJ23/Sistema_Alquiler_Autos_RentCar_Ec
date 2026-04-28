@@ -40,7 +40,7 @@
     <div v-else>
       <p class="text-sm text-zinc-500 mb-6">
         <span class="text-orange-400 font-bold">{{ vehiculos.length }}</span>
-        vehículo{{ vehiculos.length !== 1 ? 's' : '' }} disponible{{ vehiculos.length !== 1 ? 's' : '' }}
+        vehículo{{ vehiculos.length !== 1 ? 's' : '' }} encontrado{{ vehiculos.length !== 1 ? 's' : '' }}
       </p>
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         <div
@@ -48,9 +48,17 @@
           :key="v.id"
           class="card overflow-hidden hover:border-zinc-700 hover:-translate-y-1 transition-all duration-200 group"
         >
-          <div class="h-40 bg-zinc-800 flex items-center justify-center">
+          <div class="h-40 bg-zinc-800 flex items-center justify-center relative">
             <img v-if="v.imagenUrl" :src="getImageUrl(v.imagenUrl)" :alt="v.placa" class="w-full h-full object-cover" />
             <Car v-else class="w-14 h-14 text-zinc-700" />
+            
+            <!-- Badge de Estado -->
+            <div 
+              class="absolute top-3 right-3 px-2 py-0.5 rounded-md text-[10px] font-black uppercase border"
+              :class="getStatusCls(v.status)"
+            >
+              {{ v.status }}
+            </div>
           </div>
           <div class="p-4">
             <h3 class="font-bold text-white text-sm">{{ v.modelo?.marca?.nombre }} {{ v.modelo?.nombre }} {{ v.anio }}</h3>
@@ -69,7 +77,7 @@
                 :to="`/vehiculos/${v.id}?fechaInicio=${qFechaInicio}&fechaFin=${qFechaFin}`"
                 class="text-xs font-bold bg-orange-500 hover:bg-orange-400 text-black px-4 py-1.5 rounded-lg transition-colors"
               >
-                Reservar
+                Ver detalle
               </RouterLink>
             </div>
           </div>
@@ -94,7 +102,6 @@ const qFechaInicio = computed(() => route.query.fechaInicio as string ?? '');
 const qFechaFin    = computed(() => route.query.fechaFin    as string ?? '');
 const fechaInicio  = ref(qFechaInicio.value);
 const fechaFin     = ref(qFechaFin.value);
-const hasSearched  = computed(() => !!qFechaInicio.value && !!qFechaFin.value);
 
 const dias = computed(() => {
   if (!qFechaInicio.value || !qFechaFin.value) return 1;
@@ -107,5 +114,15 @@ watch(data, (d) => { vehiculos.value = (d as { data?: Vehiculo[] })?.data ?? [];
 
 function handleSearch() {
   router.push({ path: '/buscar', query: { fechaInicio: fechaInicio.value, fechaFin: fechaFin.value } });
+}
+
+function getStatusCls(status: string) {
+  switch (status) {
+    case 'DISPONIBLE':   return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+    case 'RESERVADO':    return 'bg-amber-500/20  text-amber-400  border-amber-500/30';
+    case 'EN_USO':       return 'bg-blue-500/20   text-blue-400   border-blue-500/30';
+    case 'MANTENIMIENTO':return 'bg-orange-500/20 text-orange-400 border-orange-500/30';
+    default:             return 'bg-zinc-500/20   text-zinc-400   border-zinc-500/30';
+  }
 }
 </script>

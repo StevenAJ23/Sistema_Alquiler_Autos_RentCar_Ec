@@ -21,7 +21,15 @@ export class DevolucionService {
     const alquiler = await this.alquilerRepository.findByIdWithRelations(dto.alquilerId);
     if (!alquiler) throw new NotFoundException('Alquiler', dto.alquilerId);
     if ((alquiler as any).status !== 'ACTIVO') throw new ValidationException('El alquiler no está activo');
-    if (dto.kmEntrada < (alquiler as any).kmSalida) throw new ValidationException('kmEntrada no puede ser menor que kmSalida');
+    if (dto.kmEntrada < (alquiler as any).kmSalida) throw new ValidationException('El kilometraje de entrada no puede ser menor al de salida');
+
+    // Validación de "Sanidad": Máximo 2500km por día (evita errores de dedo)
+    const inicio = new Date((alquiler as any).fechaInicio);
+    const dias = Math.max(1, Math.ceil((new Date().getTime() - inicio.getTime()) / (1000 * 60 * 60 * 24)));
+    const recorrido = dto.kmEntrada - (alquiler as any).kmSalida;
+    if (recorrido / dias > 2500) {
+      throw new ValidationException(`Kilometraje inusualmente alto (${recorrido} km en ${dias} día/s). Por favor verifique si el valor ingresado es correcto.`);
+    }
 
     const devolucion = await this.db.devolucion.create({
       data: {
