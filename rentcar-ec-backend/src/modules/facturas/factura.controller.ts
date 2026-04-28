@@ -6,7 +6,7 @@ export class FacturaController {
 
   generar = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      res.status(201).json({ success: true, data: await this.facturaService.generar(req.body) });
+      res.status(201).json({ success: true, data: await this.facturaService.generar(req.body, req.user!) });
     } catch (err) { next(err); }
   };
 

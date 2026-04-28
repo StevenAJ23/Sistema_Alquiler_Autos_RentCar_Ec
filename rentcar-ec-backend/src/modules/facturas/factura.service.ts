@@ -17,10 +17,26 @@ export class FacturaService {
     return `FAC-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
   }
 
-  async generar(dto: CreateFacturaDto) {
+  async generar(dto: CreateFacturaDto, requestingUser: { id: string; role: string }) {
     const reserva = await this.reservaRepository.findByIdWithRelations(dto.reservaId);
     if (!reserva) throw new NotFoundException('Reserva', dto.reservaId);
-    if ((reserva as any).status === 'CANCELADA') throw new ValidationException('No se puede generar factura para una reserva cancelada');
+
+    // 1. Validar propiedad (Si es cliente, la reserva debe ser suya)
+    if (requestingUser.role === 'CLIENTE' && (reserva as any).usuarioId !== requestingUser.id) {
+      throw new NotFoundException('Reserva', dto.reservaId);
+    }
+
+    // 2. Validar estado de la reserva
+    if ((reserva as any).status === 'CANCELADA') {
+      throw new ValidationException('No se puede generar factura para una reserva cancelada');
+    }
+
+    // 3. Validar pagos (Debe haber al menos un pago completado)
+    const pagos = (reserva as any).pagos || [];
+    const tienePagoCompletado = pagos.some((p: any) => p.status === 'COMPLETADO');
+    if (!tienePagoCompletado) {
+      throw new ValidationException('Debe existir al menos un pago completado para generar la factura');
+    }
 
     const subtotal = Number((reserva as any).totalAmount);
     const iva      = Math.round(subtotal * 0.15 * 100) / 100;

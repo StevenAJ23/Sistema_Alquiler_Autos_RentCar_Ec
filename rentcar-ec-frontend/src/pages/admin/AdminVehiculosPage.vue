@@ -114,22 +114,12 @@
         <label class="block text-sm font-medium text-gray-700 mb-1">URL de la Imagen (Recomendado para Azure)</label>
         <input v-model="modal.row.imagenUrl" placeholder="https://ejemplo.com/auto.jpg" :class="inputCls" />
       </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">O subir archivo (Opcional)</label>
-        <div v-if="imagenPreview || modal.row.imagenUrl" class="mb-2">
-          <img
-            :src="imagenPreview || (modal.row.imagenUrl && modal.row.imagenUrl.startsWith('http') ? modal.row.imagenUrl : getImagenUrl(modal.row.imagenUrl))"
-            alt="Vista previa"
-            class="w-full h-40 object-cover rounded-xl border border-zinc-700 shadow-lg"
-          />
-        </div>
-        <input
-          type="file"
-          accept="image/*"
-          @change="handleFileChange"
-          class="block w-full text-xs text-zinc-400 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-zinc-800 file:text-zinc-300 hover:file:bg-zinc-700 transition-all cursor-pointer"
+      <div v-if="modal.row.imagenUrl" class="mb-2">
+        <img
+          :src="modal.row.imagenUrl.startsWith('http') ? modal.row.imagenUrl : getImagenUrl(modal.row.imagenUrl)"
+          alt="Vista previa"
+          class="w-full h-48 object-cover rounded-2xl border border-zinc-800 shadow-2xl"
         />
-        <p class="mt-1 text-[10px] text-zinc-500">JPG, PNG, WebP — máximo 5 MB</p>
       </div>
       <label class="flex items-center gap-2 cursor-pointer">
         <input v-model="modal.row.isActive" type="checkbox" class="w-4 h-4 rounded text-blue-600" />
@@ -178,8 +168,6 @@ const vehiculos = computed<Vehiculo[]>(() => {
   return (d?.data as { data?: Vehiculo[] })?.data ?? (d?.data as Vehiculo[]) ?? [];
 });
 
-const imagenFile    = ref<File | null>(null);
-const imagenPreview = ref<string>('');
 const formError     = ref<string | null>(null);
 
 const modelos      = ref<Modelo[]>([]);
@@ -234,15 +222,9 @@ function makeEmpty(row?: Vehiculo) {
 
 const modal = reactive({ open: false, id: null as string | null, row: makeEmpty() });
 
-function openCreate() { imagenFile.value = null; imagenPreview.value = ''; formError.value = null; Object.assign(modal, { open: true, id: null, row: makeEmpty() }); }
-function openEdit(row: Vehiculo) { imagenFile.value = null; imagenPreview.value = ''; formError.value = null; Object.assign(modal, { open: true, id: row.id, row: makeEmpty(row) }); }
-function close() { imagenFile.value = null; imagenPreview.value = ''; formError.value = null; Object.assign(modal, { open: false, id: null, row: makeEmpty() }); }
-
-function handleFileChange(e: Event) {
-  const file = (e.target as HTMLInputElement).files?.[0] ?? null;
-  imagenFile.value    = file;
-  imagenPreview.value = file ? URL.createObjectURL(file) : '';
-}
+function openCreate() { formError.value = null; Object.assign(modal, { open: true, id: null, row: makeEmpty() }); }
+function openEdit(row: Vehiculo) { formError.value = null; Object.assign(modal, { open: true, id: row.id, row: makeEmpty(row) }); }
+function close() { formError.value = null; Object.assign(modal, { open: false, id: null, row: makeEmpty() }); }
 
 function getImagenUrl(url: string | null | undefined): string {
   if (!url) return '';
@@ -284,12 +266,6 @@ async function handleSubmit() {
     } else {
       const res  = await create.mutateAsync({ ...modal.row });
       vehiculoId = (res as any)?.data?.id ?? (res as any)?.id ?? '';
-    }
-
-    if (imagenFile.value && vehiculoId) {
-      const fd = new FormData();
-      fd.append('imagen', imagenFile.value);
-      await apiClient.uploadFile(`vehiculos/${vehiculoId}/imagen`, fd);
     }
 
     close();
