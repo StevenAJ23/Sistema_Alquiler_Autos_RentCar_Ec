@@ -161,7 +161,7 @@ import AdminFormModal from '@/components/admin/AdminFormModal.vue';
 import { useVehiculos, useCreateVehiculo, useUpdateVehiculo, useDeleteVehiculo } from '@/composables/useVehiculos';
 import { apiClient } from '@/lib/api-client';
 import { adminService } from '@/services/admin.service';
-import type { Vehiculo, VehicleStatus, Modelo, Categoria, TipoCombustible, TipoTransmision, Agencia } from '@/types/domain';
+import type { Vehiculo, VehicleStatus, Modelo, Categoria, TipoCombustible, TipoTransmision, Agencia, Marca } from '@/types/domain';
 import * as V from '@/utils/validators';
 
 const inputCls = 'input-base';
@@ -220,8 +220,8 @@ onMounted(async () => {
     adminService.getCategorias(),
     adminService.getCombustibles(),
     adminService.getTransmisiones(),
-    apiClient.get('/agencias'),
-    apiClient.get('/marcas'),
+    adminService.getAgencias(),
+    adminService.getMarcas(),
   ]);
   if (rm.status    === 'fulfilled') modelos.value       = extractArray(rm.value);
   if (rc.status    === 'fulfilled') categorias.value    = extractArray(rc.value);
