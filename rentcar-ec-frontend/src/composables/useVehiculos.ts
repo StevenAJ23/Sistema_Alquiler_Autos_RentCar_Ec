@@ -18,6 +18,7 @@ export function useVehiculosMarketplace(params?: Partial<VehiculoSearchParams>) 
   });
 }
 
+export function useVehiculosSearch(params: any) {
   return useQuery({
     queryKey: [...VEHICULOS_KEY, 'search', params],
     queryFn: () => vehiculosService.search(params),
