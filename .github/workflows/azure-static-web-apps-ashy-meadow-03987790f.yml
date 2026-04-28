@@ -6,14 +6,14 @@ on:
       - master
     paths:
       - 'rentcar-ec-frontend/**'
-      - '.github/workflows/azure-static-web-apps.yml'
+      - '.github/workflows/azure-static-web-apps-ashy-meadow-03987790f.yml'
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - master
     paths:
       - 'rentcar-ec-frontend/**'
-      - '.github/workflows/azure-static-web-apps.yml'
+      - '.github/workflows/azure-static-web-apps-ashy-meadow-03987790f.yml'
 
 jobs:
   build_and_deploy_job:
