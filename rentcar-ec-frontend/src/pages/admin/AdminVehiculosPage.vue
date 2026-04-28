@@ -90,7 +90,7 @@
       </div>
 
       <!-- Formulario Nuevo Modelo -->
-      <div v-if="modal.row.modeloId === 'NEW_MODEL'" class="bg-orange-500/5 border border-orange-500/20 rounded-xl p-4 space-y-3">
+      <div v-if="modal.row.modeloId === 'NEW_MODEL'" class="bg-orange-500/10 border border-orange-500/30 rounded-xl p-4 space-y-3 my-2">
         <p class="text-xs font-bold text-orange-400 uppercase tracking-widest">Nuevo Modelo</p>
         <div class="grid grid-cols-2 gap-3">
           <div>
@@ -312,9 +312,9 @@ async function handleSubmit() {
     let finalModeloId = modal.row.modeloId;
 
     // Si es un modelo nuevo, crearlo primero
-    if (finalModeloId === 'NEW_MODEL') {
+    if (modal.row.modeloId === 'NEW_MODEL') {
       if (!newModelForm.nombre || !newModelForm.marcaId) {
-        formError.value = 'Nombre y Marca son obligatorios para el nuevo modelo';
+        formError.value = 'Debes escribir el NOMBRE y seleccionar la MARCA para el nuevo modelo';
         return;
       }
       
@@ -323,7 +323,7 @@ async function handleSubmit() {
       // Si también es una marca nueva
       if (finalMarcaId === 'NEW_MARCA') {
         if (!newModelForm.nuevaMarcaNombre) {
-          formError.value = 'El nombre de la nueva marca es obligatorio';
+          formError.value = 'Debes escribir el nombre de la NUEVA MARCA';
           return;
         }
         const resMarca = await apiClient.post('/marcas', { nombre: newModelForm.nuevaMarcaNombre });
