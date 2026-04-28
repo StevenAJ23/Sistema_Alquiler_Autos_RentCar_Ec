@@ -1,6 +1,6 @@
 // src/types/domain.ts
 // Tipos del dominio — espejo del schema Prisma del backend.
-// Reutilizables en React Native (Reto 3) sin modificación.
+// Reutilizables en Ionic Vue / Quasar (Reto 3) sin modificación.
 
 // ── Enums ────────────────────────────────────────────────────
 export type UserRole       = 'ADMIN' | 'OPERADOR' | 'CLIENTE';

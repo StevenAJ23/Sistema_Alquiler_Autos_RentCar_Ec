@@ -1,14 +1,14 @@
 // src/lib/api-client.ts
 // ============================================================
-//   Cliente HTTP centralizado.
+//   Cliente HTTP centralizado (Axios).
 //
 //   DISEÑO PARA 3 RETOS:
-//   - Reto 1: BASE_URL apunta al monolito en :3800
+//   - Reto 1: BASE_URL apunta al monolito (Azure Web App)
 //   - Reto 2: BASE_URL apunta al API Gateway (mismo contrato)
-//   - Reto 3: React Native usa el mismo archivo con fetch nativo
+//   - Reto 3: Reutilizable en Ionic Vue / Quasar sin modificación
 //
-//   El componente React nunca conoce la URL — solo llama al
-//   servicio, que llama a este cliente.
+//   Los composables (useVehiculos, useReservas…) nunca conocen
+//   la URL — solo llaman a los servicios, que usan este cliente.
 // ============================================================
 
 import axios, { AxiosInstance, AxiosError } from 'axios';
