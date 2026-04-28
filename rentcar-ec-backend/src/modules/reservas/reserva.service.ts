@@ -50,15 +50,6 @@ export class ReservaService {
       throw new NoAvailabilityException(`El vehículo no puede reservarse porque está en estado: ${vehiculo.status}`);
     }
 
-    // 2. Validar que el usuario tenga LICENCIA DE CONDUCIR
-    const usuario = await this.db.usuario.findUnique({ 
-      where: { id: usuarioId },
-      include: { cliente: true }
-    });
-    if (!usuario?.cliente?.numeroLicencia) {
-      throw new ValidationException('Debes completar tu perfil con el número de LICENCIA DE CONDUCIR antes de reservar.');
-    }
-
     const hayConflicto = await this.reservaRepository.checkOverlap(dto.vehiculoId, fechaInicio, fechaFin);
     if (hayConflicto) throw new NoAvailabilityException('El vehículo ya tiene una reserva en ese rango de fechas');
 
