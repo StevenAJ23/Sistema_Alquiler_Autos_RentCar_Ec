@@ -226,8 +226,9 @@ async function handleSubmit() {
     });
     const reservaId = (res as { data?: { id?: string } })?.data?.id;
     router.push(reservaId ? `/mis-reservas/${reservaId}` : '/mis-reservas');
-  } catch (err: unknown) {
-    submitError.value = (err as { message?: string }).message ?? 'Error al crear la reserva';
+  } catch (err: any) {
+    // Extraemos el mensaje real enviado por el backend (NoAvailabilityException, etc)
+    submitError.value = err.response?.data?.error?.message || err.message || 'Error al crear la reserva';
   }
 }
 </script>
