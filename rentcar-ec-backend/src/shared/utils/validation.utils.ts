@@ -97,8 +97,8 @@ export const zRucOpcional = z.string().trim().optional()
 /** Cédula o RUC ecuatoriano opcional */
 export const zCedulaORucOpcional = z.string().trim().optional()
   .refine(
-    v => !v || (REGEX.CEDULA_EC.test(v) && esCedulaValida(v)) || (REGEX.RUC_EC.test(v) && esRucValido(v)),
-    'Identificación inválida: debe ser una cédula (10 dígitos) o un RUC (13 dígitos) válido',
+    v => !v || REGEX.CEDULA_EC.test(v) || REGEX.RUC_EC.test(v),
+    'Identificación inválida: debe ser una cédula (10 dígitos) o un RUC (13 dígitos)',
   );
 
 /** Placa ecuatoriana obligatoria (ej: ABC-1234) */
