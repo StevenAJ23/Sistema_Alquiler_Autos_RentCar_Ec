@@ -132,6 +132,46 @@
           </button>
         </div>
 
+        <!-- Facturación -->
+        <div v-if="canFacturar" class="border border-orange-500/30 bg-orange-500/5 rounded-xl p-4 space-y-3">
+          <p class="text-sm font-bold text-white flex items-center gap-2">
+            <FileText class="w-4 h-4 text-orange-400" /> Solicitar Factura
+          </p>
+          <p class="text-xs text-zinc-400">Ingrese sus datos para generar la factura legal.</p>
+          <div v-if="facturaError" class="flex items-start gap-2 bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg p-2.5">
+            <span>{{ facturaError }}</span>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">RUC/Cédula</label>
+              <input v-model="facturaForm.rucCliente" placeholder="1234567890001" class="input-base !py-2 !text-xs" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-1">Razón Social</label>
+              <input v-model="facturaForm.razonSocial" placeholder="Nombre completo" class="input-base !py-2 !text-xs" />
+            </div>
+          </div>
+          <button
+            @click="handleFacturar"
+            :disabled="crearFactura.isPending.value"
+            class="w-full flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 rounded-xl transition-all disabled:opacity-50 text-sm"
+          >
+            <Loader2 v-if="crearFactura.isPending.value" class="w-4 h-4 animate-spin" />
+            {{ crearFactura.isPending.value ? 'Generando...' : 'Generar Factura' }}
+          </button>
+        </div>
+
+        <!-- Factura Generada -->
+        <div v-if="r.facturas && r.facturas.length > 0" class="border border-emerald-500/30 bg-emerald-500/5 rounded-xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-bold text-white flex items-center gap-2">
+              <CheckCircle2 class="w-4 h-4 text-emerald-400" /> Factura Emitida
+            </p>
+            <span class="font-mono text-[10px] text-emerald-400">{{ r.facturas[0].numeroFactura }}</span>
+          </div>
+          <p class="text-[10px] text-zinc-500">Emitida el {{ new Date(r.facturas[0].createdAt).toLocaleDateString() }}</p>
+        </div>
+
         <!-- Cancelar -->
         <div v-if="cancellable">
           <div v-if="cancelError" class="mb-2 flex items-start gap-2 bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg p-2.5">
@@ -173,7 +213,7 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Loader2, ChevronLeft, Car, X, MapPin, CreditCard } from 'lucide-vue-next';
+import { Loader2, ChevronLeft, Car, X, MapPin, CreditCard, FileText, CheckCircle2 } from 'lucide-vue-next';
 import { useMutation, useQueryClient } from '@tanstack/vue-query';
 import { useReserva, useCancelReserva } from '@/composables/useReservas';
 import type { Reserva, ReservaStatus } from '@/types/domain';
@@ -199,11 +239,16 @@ const cancelReserva = useCancelReserva();
 
 const r           = computed<Reserva | undefined>(() => (data.value as { data?: Reserva })?.data);
 const status      = computed(() => STATUS_MAP[r.value?.status as ReservaStatus] ?? { label: r.value?.status ?? '', cls: 'bg-zinc-800 text-zinc-400' });
-const cancellable = computed(() => r.value?.status === 'PENDIENTE' || r.value?.status === 'CONFIRMADA');
+const hasFactura  = computed(() => (r.value?.facturas?.length ?? 0) > 0);
+const isPaid      = computed(() => r.value?.pagos?.some((p: any) => p.status === 'COMPLETADO'));
+const cancellable = computed(() => (r.value?.status === 'PENDIENTE' || r.value?.status === 'CONFIRMADA') && !hasFactura.value);
 const payable     = computed(() => (r.value?.status === 'PENDIENTE' || r.value?.status === 'CONFIRMADA') && (!r.value?.pagos || r.value.pagos.length === 0));
+const canFacturar = computed(() => isPaid.value && !hasFactura.value && r.value?.status !== 'CANCELADA');
 
 const pagoForm          = reactive({ metodoPago: 'EFECTIVO', referencia: '' });
+const facturaForm       = reactive({ rucCliente: '', razonSocial: '' });
 const pagoError         = ref<string | null>(null);
+const facturaError      = ref<string | null>(null);
 const cancelError       = ref<string | null>(null);
 const showCancelConfirm = ref(false);
 
@@ -228,11 +273,43 @@ const crearPago = useMutation({
   onSuccess: () => qc.invalidateQueries({ queryKey: ['reservas', id] }),
 });
 
+const crearFactura = useMutation({
+  mutationFn: async () => {
+    const res = await fetch(`${API_URL}/facturas`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+      body: JSON.stringify({
+        reservaId:   id,
+        rucCliente:  facturaForm.rucCliente,
+        razonSocial: facturaForm.razonSocial,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({})) as Record<string, unknown>;
+      throw new Error((err?.error as Record<string, unknown>)?.message as string || 'Error al generar factura');
+    }
+    return res.json();
+  },
+  onSuccess: () => qc.invalidateQueries({ queryKey: ['reservas', id] }),
+});
+
 async function handlePagar() {
   pagoError.value = null;
   try { await crearPago.mutateAsync(); }
   catch (err: unknown) {
     pagoError.value = (err as { message?: string }).message ?? 'Error al procesar pago';
+  }
+}
+
+async function handleFacturar() {
+  facturaError.value = null;
+  if (!facturaForm.rucCliente || !facturaForm.razonSocial) {
+    facturaError.value = 'RUC y Razón Social son requeridos';
+    return;
+  }
+  try { await crearFactura.mutateAsync(); }
+  catch (err: unknown) {
+    facturaError.value = (err as { message?: string }).message ?? 'Error al generar factura';
   }
 }
 

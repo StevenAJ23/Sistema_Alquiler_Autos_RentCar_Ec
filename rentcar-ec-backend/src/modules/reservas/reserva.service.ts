@@ -102,6 +102,11 @@ export class ReservaService {
     if ((reserva as any).status === 'CANCELADA') throw new ValidationException('La reserva ya está cancelada');
     if (['COMPLETADA', 'ACTIVA'].includes((reserva as any).status)) throw new ValidationException(`No se puede cancelar una reserva en estado ${(reserva as any).status}`);
 
+    // Nueva validación: No se puede cancelar si ya se generó factura
+    if ((reserva as any).facturas?.length > 0) {
+      throw new ValidationException('No se puede cancelar una reserva que ya tiene una factura emitida. Contacte con administración.');
+    }
+
     await this.reservaRepository.updateStatus(id, 'CANCELADA');
     await this.outboxRepository.publicar({ usuarioId, evento: 'RESERVA_CANCELADA', payload: { reservaId: id, codigoReserva: (reserva as any).codigoReserva } });
     await this.historialRepository.registrar({ usuarioId, accion: 'RESERVA_CANCELADA', entidad: 'Reserva', entidadId: id });
