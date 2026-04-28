@@ -18,6 +18,7 @@ export function createCatalogosRouter(controller: CatalogosController): Router {
   router.get('/ciudades',            controller.getCiudades);
   router.get('/sistemas-externos',   controller.getSistemasExternos);
   router.get('/estados-vehiculo',    controller.getEstadosVehiculo);
+  router.post('/modelos',            controller.createModelo);
 
   return router;
 }

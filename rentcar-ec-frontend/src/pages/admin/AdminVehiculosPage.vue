@@ -37,7 +37,13 @@
     >
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">Placa <span class="text-red-500">*</span></label>
-        <input v-model="modal.row.placa" required placeholder="ABC-1234" :class="inputCls" @input="modal.row.placa = modal.row.placa.toUpperCase()" />
+        <input
+          v-model="modal.row.placa"
+          required
+          placeholder="ABC-1234"
+          :class="inputCls"
+          @input="handlePlacaInput"
+        />
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
@@ -79,7 +85,26 @@
           <option v-for="m in modelos" :key="m.id" :value="m.id">
             {{ m.marca?.nombre }} {{ m.nombre }}
           </option>
+          <option value="NEW_MODEL" class="text-orange-500 font-bold">+ Agregar nuevo modelo...</option>
         </select>
+      </div>
+
+      <!-- Formulario Nuevo Modelo -->
+      <div v-if="modal.row.modeloId === 'NEW_MODEL'" class="bg-orange-500/5 border border-orange-500/20 rounded-xl p-4 space-y-3">
+        <p class="text-xs font-bold text-orange-400 uppercase tracking-widest">Nuevo Modelo</p>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[10px] font-bold text-zinc-500 mb-1 uppercase">Marca</label>
+            <select v-model="newModelForm.marcaId" :class="inputCls" class="!py-1.5 !text-xs">
+              <option value="">— Marca —</option>
+              <option v-for="m in marcas" :key="m.id" :value="m.id">{{ m.nombre }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-zinc-500 mb-1 uppercase">Nombre del Modelo</label>
+            <input v-model="newModelForm.nombre" placeholder="Ej: Corolla" :class="inputCls" class="!py-1.5 !text-xs" />
+          </div>
+        </div>
       </div>
 
       <div class="grid grid-cols-3 gap-3">
@@ -170,11 +195,14 @@ const vehiculos = computed<Vehiculo[]>(() => {
 
 const formError     = ref<string | null>(null);
 
+const marcas       = ref<Marca[]>([]);
 const modelos      = ref<Modelo[]>([]);
 const categorias   = ref<Categoria[]>([]);
 const combustibles = ref<TipoCombustible[]>([]);
 const transmisiones = ref<TipoTransmision[]>([]);
 const agencias     = ref<Agencia[]>([]);
+
+const newModelForm = reactive({ nombre: '', marcaId: '' });
 
 /** Extrae un array de una respuesta que puede ser array directo o paginada { data: [...] } */
 function extractArray(val: unknown): any[] {
@@ -187,18 +215,20 @@ function extractArray(val: unknown): any[] {
 }
 
 onMounted(async () => {
-  const [rm, rc, rcomb, rt, ra] = await Promise.allSettled([
+  const [rm, rc, rcomb, rt, ra, rma] = await Promise.allSettled([
     adminService.getModelos(),
     adminService.getCategorias(),
     adminService.getCombustibles(),
     adminService.getTransmisiones(),
     apiClient.get('/agencias'),
+    apiClient.get('/marcas'),
   ]);
   if (rm.status    === 'fulfilled') modelos.value       = extractArray(rm.value);
   if (rc.status    === 'fulfilled') categorias.value    = extractArray(rc.value);
   if (rcomb.status === 'fulfilled') combustibles.value  = extractArray(rcomb.value);
   if (rt.status    === 'fulfilled') transmisiones.value = extractArray(rt.value);
   if (ra.status    === 'fulfilled') agencias.value      = extractArray(ra.value);
+  if (rma.status   === 'fulfilled') marcas.value        = extractArray(rma.value);
 });
 
 function makeEmpty(row?: Vehiculo) {
@@ -224,7 +254,21 @@ const modal = reactive({ open: false, id: null as string | null, row: makeEmpty(
 
 function openCreate() { formError.value = null; Object.assign(modal, { open: true, id: null, row: makeEmpty() }); }
 function openEdit(row: Vehiculo) { formError.value = null; Object.assign(modal, { open: true, id: row.id, row: makeEmpty(row) }); }
-function close() { formError.value = null; Object.assign(modal, { open: false, id: null, row: makeEmpty() }); }
+function close() { 
+  formError.value = null; 
+  Object.assign(modal, { open: false, id: null, row: makeEmpty() }); 
+  newModelForm.nombre = '';
+  newModelForm.marcaId = '';
+}
+
+function handlePlacaInput(e: Event) {
+  const input = e.target as HTMLInputElement;
+  let val = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (val.length > 3) {
+    val = val.substring(0, 3) + '-' + val.substring(3, 7);
+  }
+  modal.row.placa = val;
+}
 
 function getImagenUrl(url: string | null | undefined): string {
   if (!url) return '';
@@ -259,12 +303,26 @@ async function handleSubmit() {
   if (err) { formError.value = err; return; }
   try {
     let vehiculoId: string;
+    let finalModeloId = modal.row.modeloId;
+
+    // Si es un modelo nuevo, crearlo primero
+    if (finalModeloId === 'NEW_MODEL') {
+      if (!newModelForm.nombre || !newModelForm.marcaId) {
+        formError.value = 'Nombre y Marca son obligatorios para el nuevo modelo';
+        return;
+      }
+      const resM = await apiClient.post('/modelos', newModelForm);
+      finalModeloId = (resM as any).data?.id ?? (resM as any).id;
+      // Actualizar lista de modelos local para futuras entradas
+      const resList = await adminService.getModelos();
+      modelos.value = extractArray(resList);
+    }
 
     if (modal.id) {
-      await update.mutateAsync({ id: modal.id, data: { ...modal.row } });
+      await update.mutateAsync({ id: modal.id, data: { ...modal.row, modeloId: finalModeloId } });
       vehiculoId = modal.id;
     } else {
-      const res  = await create.mutateAsync({ ...modal.row });
+      const res  = await create.mutateAsync({ ...modal.row, modeloId: finalModeloId });
       vehiculoId = (res as any)?.data?.id ?? (res as any)?.id ?? '';
     }
 

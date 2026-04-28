@@ -29,4 +29,18 @@ export class CatalogosController {
       ],
     });
   };
+
+  createModelo = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { nombre, marcaId } = req.body;
+      if (!nombre || !marcaId) {
+        return res.status(400).json({ success: false, error: { message: 'Nombre y marcaId son requeridos' } });
+      }
+      const data = await this.db.modelo.create({
+        data: { nombre, marcaId },
+        include: { marca: true }
+      });
+      res.status(201).json({ success: true, data });
+    } catch (e) { next(e); }
+  };
 }
