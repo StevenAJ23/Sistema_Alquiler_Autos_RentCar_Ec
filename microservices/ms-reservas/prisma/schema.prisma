@@ -1,0 +1,551 @@
+// ============================================================
+// CONFIGURACIÓN DE GENERADOR Y CONEXIÓN
+// ============================================================
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  ADMIN
+  OPERADOR
+  CLIENTE
+}
+
+enum VehicleStatus {
+  DISPONIBLE
+  RESERVADO
+  EN_USO
+  MANTENIMIENTO
+  INACTIVO
+}
+
+enum ReservaStatus {
+  PENDIENTE
+  CONFIRMADA
+  ACTIVA
+  COMPLETADA
+  CANCELADA
+}
+
+enum AlquilerStatus {
+  ACTIVO
+  FINALIZADO
+  CANCELADO
+}
+
+enum PagoStatus {
+  PENDIENTE
+  COMPLETADO
+  FALLIDO
+  REEMBOLSADO
+}
+
+enum OutboxEventStatus {
+  PENDIENTE
+  PROCESADO
+  FALLIDO
+}
+
+// ============================================================
+// GEOGRAFÍA
+// ============================================================
+
+model Provincia {
+  id        String   @id @default(uuid())
+  nombre    String   @unique
+  codigo    String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  ciudades Ciudad[]
+
+  @@map("provincias")
+}
+
+model Ciudad {
+  id          String   @id @default(uuid())
+  nombre      String
+  provinciaId String   @map("provincia_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  provincia Provincia @relation(fields: [provinciaId], references: [id])
+  agencias  Agencia[]
+  usuarios  Usuario[]
+
+  @@unique([nombre, provinciaId])
+  @@map("ciudades")
+}
+
+// ============================================================
+// EMPRESAS Y AGENCIAS
+// ============================================================
+
+model Empresa {
+  id        String   @id @default(uuid())
+  nombre    String   @unique
+  ruc       String   @unique
+  email     String?
+  telefono  String?
+  logoUrl   String?  @map("logo_url")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  agencias Agencia[]
+
+  @@map("empresas")
+}
+
+model Agencia {
+  id        String   @id @default(uuid())
+  empresaId String   @map("empresa_id")
+  ciudadId  String   @map("ciudad_id")
+  nombre    String
+  direccion String
+  telefono  String?
+  email     String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  empresa   Empresa    @relation(fields: [empresaId], references: [id])
+  ciudad    Ciudad     @relation(fields: [ciudadId], references: [id])
+  vehiculos Vehiculo[]
+  reservas  Reserva[]
+
+  @@map("agencias")
+}
+
+// ============================================================
+// CATÁLOGOS DE VEHÍCULOS
+// ============================================================
+
+model Marca {
+  id        String   @id @default(uuid())
+  nombre    String   @unique
+  logoUrl   String?  @map("logo_url")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  modelos Modelo[]
+
+  @@map("marcas")
+}
+
+model Modelo {
+  id        String   @id @default(uuid())
+  marcaId   String   @map("marca_id")
+  nombre    String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  marca     Marca      @relation(fields: [marcaId], references: [id])
+  vehiculos Vehiculo[]
+
+  @@unique([marcaId, nombre])
+  @@map("modelos")
+}
+
+model Categoria {
+  id          String   @id @default(uuid())
+  nombre      String   @unique
+  descripcion String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  vehiculos Vehiculo[]
+  tarifas   Tarifa[]
+
+  @@map("categorias")
+}
+
+model TipoCombustible {
+  id     String @id @default(uuid())
+  nombre String @unique
+
+  vehiculos Vehiculo[]
+
+  @@map("tipos_combustible")
+}
+
+model TipoTransmision {
+  id     String @id @default(uuid())
+  nombre String @unique
+
+  vehiculos Vehiculo[]
+
+  @@map("tipos_transmision")
+}
+
+model ExtraEquipamiento {
+  id          String   @id @default(uuid())
+  nombre      String   @unique
+  descripcion String?
+  precioDia   Decimal  @map("precio_dia") @db.Decimal(10, 2)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  reservaExtras ReservaExtra[]
+
+  @@map("extras_equipamiento")
+}
+
+// ============================================================
+// VEHÍCULOS
+// ============================================================
+
+model Vehiculo {
+  id                String        @id @default(uuid())
+  agenciaId         String        @map("agencia_id")
+  modeloId          String        @map("modelo_id")
+  categoriaId       String        @map("categoria_id")
+  tipoCombustibleId String        @map("tipo_combustible_id")
+  tipoTransmisionId String        @map("tipo_transmision_id")
+  placa             String        @unique
+  color             String
+  anio              Int
+  kilometraje       Int           @default(0)
+  numeroPasajeros   Int           @default(5) @map("numero_pasajeros")
+  precioDia         Decimal       @map("precio_dia") @db.Decimal(10, 2)
+  imagenUrl         String?       @map("imagen_url")
+  descripcion       String?
+  status            VehicleStatus @default(DISPONIBLE)
+  isActive          Boolean       @default(true) @map("is_active")
+  deletedAt         DateTime?     @map("deleted_at")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  agencia         Agencia         @relation(fields: [agenciaId], references: [id])
+  modelo          Modelo          @relation(fields: [modeloId], references: [id])
+  categoria       Categoria       @relation(fields: [categoriaId], references: [id])
+  tipoCombustible TipoCombustible @relation(fields: [tipoCombustibleId], references: [id])
+  tipoTransmision TipoTransmision @relation(fields: [tipoTransmisionId], references: [id])
+  reservas        Reserva[]
+  mantenimientos  Mantenimiento[]
+  kardex          Kardex[]
+
+  @@index([agenciaId, status])
+  @@index([categoriaId])
+  @@map("vehiculos")
+}
+
+// ============================================================
+// USUARIOS Y AUTENTICACIÓN
+// ============================================================
+
+model Usuario {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  nombres      String
+  apellidos    String
+  cedula       String?  @unique
+  telefono     String?
+  ciudadId     String?  @map("ciudad_id")
+  role         UserRole @default(CLIENTE)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  ciudad       Ciudad?           @relation(fields: [ciudadId], references: [id])
+  cliente      Cliente?
+  reservas     Reserva[]
+  historial    HistorialUsuario[]
+  outboxEvents OutboxEvent[]
+
+  @@map("usuarios")
+}
+
+model Cliente {
+  id                String   @id @default(uuid())
+  usuarioId         String   @unique @map("usuario_id")
+  numeroLicencia    String   @unique @map("numero_licencia")
+  fechaVencLicencia DateTime @map("fecha_venc_licencia")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id])
+
+  @@map("clientes")
+}
+
+// ============================================================
+// CATÁLOGOS DE PRECIOS
+// ============================================================
+
+model Tarifa {
+  id          String   @id @default(uuid())
+  categoriaId String   @map("categoria_id")
+  nombre      String
+  precioDia   Decimal  @map("precio_dia") @db.Decimal(10, 2)
+  diasMinimos Int      @default(1) @map("dias_minimos")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  categoria Categoria @relation(fields: [categoriaId], references: [id])
+
+  @@map("tarifas")
+}
+
+model Seguro {
+  id          String   @id @default(uuid())
+  nombre      String   @unique
+  descripcion String?
+  precioDia   Decimal  @map("precio_dia") @db.Decimal(10, 2)
+  cobertura   String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  reservas Reserva[]
+
+  @@map("seguros")
+}
+
+model CanalVenta {
+  id     String @id @default(uuid())
+  nombre String @unique
+  codigo String @unique
+
+  reservas Reserva[]
+
+  @@map("canales_venta")
+}
+
+model SistemaExterno {
+  id        String   @id @default(uuid())
+  nombre    String   @unique
+  codigo    String   @unique
+  url       String?
+  apiKey    String?  @map("api_key")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("sistemas_externos")
+}
+
+// ============================================================
+// RESERVAS
+// ============================================================
+
+model Reserva {
+  id            String        @id @default(uuid())
+  correlationId String        @unique @default(uuid()) @map("correlation_id")
+  usuarioId     String        @map("usuario_id")
+  vehiculoId    String        @map("vehiculo_id")
+  agenciaId     String        @map("agencia_id")
+  seguroId      String?       @map("seguro_id")
+  canalVentaId  String?       @map("canal_venta_id")
+  codigoReserva String        @unique @map("codigo_reserva")
+  fechaInicio   DateTime      @map("fecha_inicio") @db.Date
+  fechaFin      DateTime      @map("fecha_fin") @db.Date
+  diasTotal     Int           @map("dias_total")
+  precioBase    Decimal       @map("precio_base") @db.Decimal(10, 2)
+  precioExtras  Decimal       @default(0) @map("precio_extras") @db.Decimal(10, 2)
+  precioSeguro  Decimal       @default(0) @map("precio_seguro") @db.Decimal(10, 2)
+  totalAmount   Decimal       @map("total_amount") @db.Decimal(10, 2)
+  status        ReservaStatus @default(PENDIENTE)
+  notas         String?
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  usuario    Usuario      @relation(fields: [usuarioId], references: [id])
+  vehiculo   Vehiculo     @relation(fields: [vehiculoId], references: [id])
+  agencia    Agencia      @relation(fields: [agenciaId], references: [id])
+  seguro     Seguro?      @relation(fields: [seguroId], references: [id])
+  canalVenta CanalVenta?  @relation(fields: [canalVentaId], references: [id])
+  extras     ReservaExtra[]
+  alquiler   Alquiler?
+  pagos      Pago[]
+  facturas   Factura[]
+
+  @@index([vehiculoId, fechaInicio, fechaFin])
+  @@index([usuarioId])
+  @@index([status])
+  @@map("reservas")
+}
+
+model ReservaExtra {
+  id        String  @id @default(uuid())
+  reservaId String  @map("reserva_id")
+  extraId   String  @map("extra_id")
+  cantidad  Int     @default(1)
+  precioDia Decimal @map("precio_dia") @db.Decimal(10, 2)
+  subtotal  Decimal @db.Decimal(10, 2)
+
+  reserva Reserva           @relation(fields: [reservaId], references: [id])
+  extra   ExtraEquipamiento @relation(fields: [extraId], references: [id])
+
+  @@unique([reservaId, extraId])
+  @@map("reserva_extras")
+}
+
+// ============================================================
+// ALQUILERES Y DEVOLUCIONES
+// ============================================================
+
+model Alquiler {
+  id             String         @id @default(uuid())
+  reservaId      String         @unique @map("reserva_id")
+  kmSalida       Int            @map("km_salida")
+  kmEntrada      Int?           @map("km_entrada")
+  fechaInicio    DateTime       @map("fecha_inicio")
+  fechaFin       DateTime?      @map("fecha_fin")
+  cargoAdicional Decimal        @default(0) @map("cargo_adicional") @db.Decimal(10, 2)
+  status         AlquilerStatus @default(ACTIVO)
+  observaciones  String?
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  reserva    Reserva     @relation(fields: [reservaId], references: [id])
+  devolucion Devolucion?
+
+  @@map("alquileres")
+}
+
+model Devolucion {
+  id              String   @id @default(uuid())
+  alquilerId      String   @unique @map("alquiler_id")
+  fechaDevolucion DateTime @default(now()) @map("fecha_devolucion")
+  kmEntrada       Int      @map("km_entrada")
+  estadoVehiculo  String   @map("estado_vehiculo")
+  cargoExtra      Decimal  @default(0) @map("cargo_extra") @db.Decimal(10, 2)
+  observaciones   String?
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  alquiler Alquiler @relation(fields: [alquilerId], references: [id])
+
+  @@map("devoluciones")
+}
+
+// ============================================================
+// PAGOS Y FACTURAS
+// ============================================================
+
+model Pago {
+  id          String     @id @default(uuid())
+  reservaId   String     @map("reserva_id")
+  monto       Decimal    @db.Decimal(10, 2)
+  metodoPago  String     @map("metodo_pago")
+  referencia  String?
+  status      PagoStatus @default(PENDIENTE)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  reserva Reserva  @relation(fields: [reservaId], references: [id])
+  factura Factura?
+
+  @@map("pagos")
+}
+
+model Factura {
+  id            String   @id @default(uuid())
+  reservaId     String   @map("reserva_id")
+  pagoId        String?  @unique @map("pago_id")
+  numeroFactura String   @unique @map("numero_factura")
+  rucCliente    String?  @map("ruc_cliente")
+  razonSocial   String?  @map("razon_social")
+  subtotal      Decimal  @db.Decimal(10, 2)
+  iva           Decimal  @db.Decimal(10, 2)
+  total         Decimal  @db.Decimal(10, 2)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  reserva  Reserva          @relation(fields: [reservaId], references: [id])
+  pago     Pago?            @relation(fields: [pagoId], references: [id])
+  detalles DetalleFactura[]
+
+  @@map("facturas")
+}
+
+model DetalleFactura {
+  id          String  @id @default(uuid())
+  facturaId   String  @map("factura_id")
+  descripcion String
+  cantidad    Int     @default(1)
+  precioUnit  Decimal @map("precio_unit") @db.Decimal(10, 2)
+  subtotal    Decimal @db.Decimal(10, 2)
+
+  factura Factura @relation(fields: [facturaId], references: [id])
+
+  @@map("detalle_factura")
+}
+
+// ============================================================
+// AUDITORÍA, KARDEX Y EVENTOS
+// ============================================================
+
+model HistorialUsuario {
+  id        String   @id @default(uuid())
+  usuarioId String?  @map("usuario_id")
+  accion    String
+  entidad   String
+  entidadId String   @map("entidad_id")
+  detalle   Json?
+  ip        String?
+  userAgent String?  @map("user_agent")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  usuario Usuario? @relation(fields: [usuarioId], references: [id])
+
+  @@index([usuarioId])
+  @@index([entidad, entidadId])
+  @@map("historial_usuarios")
+}
+
+model Kardex {
+  id             String   @id @default(uuid())
+  vehiculoId     String   @map("vehiculo_id")
+  evento         String
+  estadoAnterior String?  @map("estado_anterior")
+  estadoNuevo    String   @map("estado_nuevo")
+  usuarioId      String?  @map("usuario_id")
+  referencia     String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  vehiculo Vehiculo @relation(fields: [vehiculoId], references: [id])
+
+  @@index([vehiculoId])
+  @@map("kardex")
+}
+
+model Mantenimiento {
+  id          String    @id @default(uuid())
+  vehiculoId  String    @map("vehiculo_id")
+  tipo        String
+  descripcion String
+  fechaInicio DateTime  @map("fecha_inicio")
+  fechaFin    DateTime? @map("fecha_fin")
+  costo       Decimal?  @db.Decimal(10, 2)
+  tecnico     String?
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  vehiculo Vehiculo @relation(fields: [vehiculoId], references: [id])
+
+  @@map("mantenimientos")
+}
+
+model OutboxEvent {
+  id            String            @id @default(uuid())
+  correlationId String?           @map("correlation_id")
+  usuarioId     String?           @map("usuario_id")
+  evento        String
+  payload       Json
+  status        OutboxEventStatus @default(PENDIENTE)
+  intentos      Int               @default(0)
+  procesadoAt   DateTime?         @map("procesado_at")
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  usuario Usuario? @relation(fields: [usuarioId], references: [id])
+
+  @@index([status, evento])
+  @@map("outbox_events")
+}
+
