@@ -1,0 +1,233 @@
+{
+  "info": {
+    "name": "RentCar Ec — Integración Booking (Reto 2)",
+    "description": "Colección de endpoints B2B que Booking consume de RentCar Ec. Autenticación via X-Api-Key.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "https://rentcar-ec-api-f2bdb7e6f7akaneu.canadacentral-01.azurewebsites.net/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "API_KEY",
+      "value": "bk_rentcar_2025_x9z3m7qp",
+      "type": "string"
+    },
+    {
+      "key": "vehiculoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "reservaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "alquilerId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Vehículos",
+      "item": [
+        {
+          "name": "GET /vehiculos — Listar vehículos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/vehiculos?page=1&pageSize=20&disponible=true",
+              "host": ["{{BASE_URL}}"],
+              "path": ["vehiculos"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "pageSize", "value": "20" },
+                { "key": "disponible", "value": "true" },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "categoria", "value": "", "disabled": true }
+              ]
+            },
+            "description": "Endpoint público. No requiere autenticación. Retorna lista paginada de vehículos."
+          }
+        },
+        {
+          "name": "GET /vehiculos/:id — Obtener vehículo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{BASE_URL}}/vehiculos/{{vehiculoId}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["vehiculos", "{{vehiculoId}}"]
+            },
+            "description": "Endpoint público. Retorna detalles de un vehículo por UUID."
+          }
+        },
+        {
+          "name": "GET /vehiculos/:id/disponibilidad — Consultar disponibilidad",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{API_KEY}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/vehiculos/{{vehiculoId}}/disponibilidad?fechaInicio=2025-08-01&fechaFin=2025-08-05",
+              "host": ["{{BASE_URL}}"],
+              "path": ["vehiculos", "{{vehiculoId}}", "disponibilidad"],
+              "query": [
+                { "key": "fechaInicio", "value": "2025-08-01" },
+                { "key": "fechaFin", "value": "2025-08-05" }
+              ]
+            },
+            "description": "Verifica si el vehículo está disponible en el rango de fechas. 200 = disponible, 409 = conflicto."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Reservas",
+      "item": [
+        {
+          "name": "POST /reservas — Crear reserva",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data.id) {",
+                  "  pm.collectionVariables.set('reservaId', res.data.id);",
+                  "  console.log('reservaId guardado:', res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Api-Key", "value": "{{API_KEY}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vehiculoId\": \"{{vehiculoId}}\",\n  \"clienteId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"fechaInicio\": \"2025-08-01\",\n  \"fechaFin\": \"2025-08-05\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/reservas",
+              "host": ["{{BASE_URL}}"],
+              "path": ["reservas"]
+            },
+            "description": "Crea una reserva. clienteId es el UUID del cliente en el sistema Booking (opcional). El ID de la reserva creada se guarda automáticamente en la variable reservaId."
+          }
+        },
+        {
+          "name": "GET /reservas/:id — Obtener reserva",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Api-Key", "value": "{{API_KEY}}" }
+            ],
+            "url": {
+              "raw": "{{BASE_URL}}/reservas/{{reservaId}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["reservas", "{{reservaId}}"]
+            },
+            "description": "Recupera el estado actual de una reserva por UUID."
+          }
+        },
+        {
+          "name": "PATCH /reservas/:id — Actualizar estado",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Api-Key", "value": "{{API_KEY}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"CONFIRMADA\"\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/reservas/{{reservaId}}",
+              "host": ["{{BASE_URL}}"],
+              "path": ["reservas", "{{reservaId}}"]
+            },
+            "description": "Actualiza el estado de la reserva. Valores permitidos: PENDIENTE, CONFIRMADA, CANCELADA, FINALIZADA."
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Alquileres",
+      "item": [
+        {
+          "name": "POST /alquileres — Iniciar alquiler",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data && res.data.id) {",
+                  "  pm.collectionVariables.set('alquilerId', res.data.id);",
+                  "  console.log('alquilerId guardado:', res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Api-Key", "value": "{{API_KEY}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reservaId\": \"{{reservaId}}\",\n  \"kmSalida\": 15000\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/alquileres",
+              "host": ["{{BASE_URL}}"],
+              "path": ["alquileres"]
+            },
+            "description": "Inicia el alquiler a partir de una reserva CONFIRMADA. Registra el km de salida del vehículo."
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Devoluciones",
+      "item": [
+        {
+          "name": "POST /devoluciones — Registrar devolución",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Api-Key", "value": "{{API_KEY}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"alquilerId\": \"{{alquilerId}}\",\n  \"kmEntrada\": 15320,\n  \"cargoExtra\": 0\n}"
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/devoluciones",
+              "host": ["{{BASE_URL}}"],
+              "path": ["devoluciones"]
+            },
+            "description": "Registra la devolución del vehículo. cargoExtra es 0 si no hay daños o combustible faltante."
+          }
+        }
+      ]
+    }
+  ]
+}
