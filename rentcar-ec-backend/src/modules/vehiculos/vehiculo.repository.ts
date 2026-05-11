@@ -11,9 +11,24 @@ const include = {
 export class VehiculoRepository {
   constructor(private readonly db: PrismaClient) {}
 
-  async findAll(page = 1, limit = 20) {
+  async findAll(page = 1, limit = 20, filters: { search?: string; categoria?: string; disponible?: boolean } = {}) {
     const skip  = (page - 1) * limit;
-    const where = { isActive: true, deletedAt: null };
+    const where: any = { isActive: true, deletedAt: null };
+
+    if (filters.disponible !== undefined) {
+      where.status = filters.disponible ? 'DISPONIBLE' : { not: 'DISPONIBLE' };
+    }
+    if (filters.categoria) {
+      where.categoria = { nombre: { contains: filters.categoria, mode: 'insensitive' } };
+    }
+    if (filters.search) {
+      where.OR = [
+        { modelo: { nombre:       { contains: filters.search, mode: 'insensitive' } } },
+        { modelo: { marca: { nombre: { contains: filters.search, mode: 'insensitive' } } } },
+        { descripcion:             { contains: filters.search, mode: 'insensitive' } },
+      ];
+    }
+
     const [data, total] = await Promise.all([
       this.db.vehiculo.findMany({ skip, take: limit, where, include, orderBy: { createdAt: 'desc' } }),
       this.db.vehiculo.count({ where }),
@@ -74,5 +89,19 @@ export class VehiculoRepository {
       where: { id },
       data:  { isActive: false, deletedAt: new Date() },
     });
+  }
+
+  async checkDisponibilidad(id: string, fechaInicio: Date, fechaFin: Date): Promise<boolean> {
+    const count = await this.db.reserva.count({
+      where: {
+        vehiculoId: id,
+        status:     { in: ['PENDIENTE', 'CONFIRMADA', 'ACTIVA'] },
+        AND: [
+          { fechaInicio: { lte: fechaFin } },
+          { fechaFin:    { gte: fechaInicio } },
+        ],
+      },
+    });
+    return count === 0;
   }
 }

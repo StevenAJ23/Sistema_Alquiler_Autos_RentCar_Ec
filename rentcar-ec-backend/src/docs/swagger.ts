@@ -7,21 +7,24 @@ export const swaggerSpec = {
 ## Bienvenido a la API de RentCar Ec
 
 Sistema de alquiler de autos con arquitectura modular API-first.
-Versión: **Reto 1 — Construcción base sin integración externa**.
+Versión: **Reto 2 — Integración con Booking**.
 
 ---
 
-### 🔗 Preparado para integración futura (Reto 2)
+### 🔗 Endpoints de integración con Booking (contrato \`vehiculos-api.yaml\`)
 
-Estos endpoints están diseñados bajo el estándar OpenAPI para ser consumidos por el prototipo de **Booking**:
+Estos endpoints implementan el contrato oficial y son consumidos por el prototipo de **Booking**:
 
-*   **Búsqueda de Disponibilidad:** \`GET /api/v1/vehiculos/search\`
-*   **Detalle de Vehículo:** \`GET /api/v1/vehiculos/{id}\`
-*   **Crear Reserva:** \`POST /api/v1/reservas\`
-*   **Cancelar Reserva:** \`PATCH /api/v1/reservas/{id}/cancel\`
-*   **Registrar Pago:** \`POST /api/v1/pagos\`
+*   **Listar vehículos:** \`GET /api/v1/vehiculos\` — catálogo paginado con filtros
+*   **Detalle de vehículo:** \`GET /api/v1/vehiculos/{id}\`
+*   **Disponibilidad por rango de fechas:** \`GET /api/v1/vehiculos/{id}/disponibilidad\`
+*   **Crear reserva:** \`POST /api/v1/reservas\` — acepta \`clienteId\` de Booking
+*   **Detalle de reserva:** \`GET /api/v1/reservas/{id}\`
+*   **Actualizar estado de reserva:** \`PATCH /api/v1/reservas/{id}\` — campo \`estado\`
+*   **Iniciar alquiler:** \`POST /api/v1/alquileres\`
+*   **Registrar devolución:** \`POST /api/v1/devoluciones\`
 
-**Eventos Outbox modelados:** \`RESERVA_CREADA\`, \`RESERVA_CANCELADA\`, \`PAGO_REGISTRADO\`, \`FACTURA_GENERADA\`.
+**Eventos Outbox modelados:** \`RESERVA_CREADA\`, \`RESERVA_CANCELADA\`, \`ALQUILER_INICIADO\`, \`VEHICULO_DEVUELTO\`, \`FACTURA_GENERADA\`.
 
 ---
 
@@ -150,7 +153,8 @@ Registro → Login → Buscar vehículo → Crear reserva
               },
             },
           },
-          notas: { type: 'string', maxLength: 500, example: 'Llegamos al mediodía' },
+          notas:     { type: 'string', maxLength: 500, example: 'Llegamos al mediodía' },
+          clienteId: { type: 'string', format: 'uuid', description: 'Opcional — UUID del cliente en el sistema de Booking (integración B2B)' },
         },
         example: {
           vehiculoId: '31f4ce3c-db82-4594-81ac-378b8acac395',
@@ -318,16 +322,16 @@ Registro → Login → Buscar vehículo → Crear reserva
       },
       UpdateReservaStatusDto: {
         type: 'object',
-        required: ['status'],
+        required: ['estado'],
         properties: {
-          status: {
+          estado: {
             type: 'string',
-            enum: ['PENDIENTE', 'CONFIRMADA', 'ACTIVA', 'COMPLETADA', 'CANCELADA'],
+            enum: ['PENDIENTE', 'CONFIRMADA', 'CANCELADA', 'FINALIZADA'],
             example: 'CONFIRMADA',
-            description: 'Nuevo estado de la reserva',
+            description: 'Nuevo estado de la reserva. FINALIZADA se mapea internamente a COMPLETADA.',
           },
         },
-        example: { status: 'CONFIRMADA' },
+        example: { estado: 'CONFIRMADA' },
       },
       SuccessResponse: {
         type: 'object',
@@ -508,7 +512,7 @@ Registro → Login → Buscar vehículo → Crear reserva
     },
     '/api/v1/vehiculos/search': {
       get: {
-        tags: ['Vehículos', 'Reto 2: Integración (Booking)'],
+        tags: ['Vehículos'],
         summary: 'Buscar vehículos por disponibilidad',
         description: '**Público.** Filtra vehículos que NO tengan reservas activas/confirmadas en el rango de fechas indicado.',
         security: [],
@@ -521,6 +525,25 @@ Registro → Login → Buscar vehículo → Crear reserva
         responses: {
           200: { description: '✅ Vehículos disponibles en el rango de fechas' },
           400: { $ref: '#/components/responses/ValidationError' },
+        },
+      },
+    },
+    '/api/v1/vehiculos/{id}/disponibilidad': {
+      get: {
+        tags: ['Vehículos', 'Reto 2: Integración (Booking)'],
+        summary: 'Consultar disponibilidad del vehículo',
+        description: '**Público.** Valida si el vehículo está disponible en un rango de fechas. Retorna `409` si hay conflicto. Usado por Booking para poblar el calendario de disponibilidad.',
+        security: [],
+        parameters: [
+          { name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } },
+          { name: 'fechaInicio', in: 'query', required: true, schema: { type: 'string', format: 'date', example: '2026-09-01' }, description: 'Fecha inicio (YYYY-MM-DD)' },
+          { name: 'fechaFin',    in: 'query', required: true, schema: { type: 'string', format: 'date', example: '2026-09-05' }, description: 'Fecha fin (YYYY-MM-DD)' },
+        ],
+        responses: {
+          200: { description: '✅ Vehículo disponible — `{ disponible: true, mensaje: "..." }`' },
+          400: { $ref: '#/components/responses/ValidationError' },
+          404: { $ref: '#/components/responses/NotFound' },
+          409: { description: '⚠️ Conflicto de fechas — `{ disponible: false, mensaje: "..." }`' },
         },
       },
     },
@@ -700,7 +723,7 @@ Registro → Login → Buscar vehículo → Crear reserva
       },
       post: {
         tags: ['Reservas', 'Reto 2: Integración (Booking)'],
-        summary: 'Crear reserva',
+        summary: 'Crear reserva (contrato Booking)',
         description: 'Crea una nueva reserva. El backend valida disponibilidad del vehículo en el rango de fechas y **recalcula el total** automáticamente.',
         requestBody: {
           required: true,
@@ -727,8 +750,8 @@ Registro → Login → Buscar vehículo → Crear reserva
     },
     '/api/v1/reservas/{id}': {
       get: {
-        tags: ['Reservas'],
-        summary: 'Detalle de reserva',
+        tags: ['Reservas', 'Reto 2: Integración (Booking)'],
+        summary: 'Detalle de reserva (contrato Booking)',
         description: 'El cliente solo puede ver sus propias reservas. El admin puede ver cualquiera.',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         responses: {
@@ -738,8 +761,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         },
       },
       patch: {
-        tags: ['Reservas'],
-        summary: 'Cambiar estado de reserva',
+        tags: ['Reservas', 'Reto 2: Integración (Booking)'],
+        summary: 'Actualizar estado de reserva (contrato Booking)',
         description: '**Solo admin.** Cambia manualmente el estado de una reserva.',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
         requestBody: {
@@ -755,7 +778,7 @@ Registro → Login → Buscar vehículo → Crear reserva
     },
     '/api/v1/reservas/{id}/cancel': {
       patch: {
-        tags: ['Reservas', 'Reto 2: Integración (Booking)'],
+        tags: ['Reservas'],
         summary: 'Cancelar reserva',
         description: 'El cliente puede cancelar sus propias reservas. Se registra evento `RESERVA_CANCELADA` en outbox. Las reservas canceladas no bloquean disponibilidad.',
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
@@ -779,8 +802,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         },
       },
       post: {
-        tags: ['Alquileres'],
-        summary: 'Iniciar alquiler',
+        tags: ['Alquileres', 'Reto 2: Integración (Booking)'],
+        summary: 'Iniciar alquiler (contrato Booking)',
         description: '**Solo admin.** Inicia el alquiler desde una reserva en estado `CONFIRMADA`. El vehículo cambia a `EN_USO`.',
         requestBody: {
           required: true,
@@ -817,8 +840,8 @@ Registro → Login → Buscar vehículo → Crear reserva
         },
       },
       post: {
-        tags: ['Devoluciones'],
-        summary: 'Registrar devolución',
+        tags: ['Devoluciones', 'Reto 2: Integración (Booking)'],
+        summary: 'Registrar devolución (contrato Booking)',
         description: '**Solo admin.** Registra la entrega del vehículo. El vehículo vuelve a `DISPONIBLE`, el alquiler pasa a `FINALIZADO` y la reserva a `COMPLETADA`.',
         requestBody: {
           required: true,
@@ -855,7 +878,7 @@ Registro → Login → Buscar vehículo → Crear reserva
         },
       },
       post: {
-        tags: ['Pagos', 'Reto 2: Integración (Booking)'],
+        tags: ['Pagos'],
         summary: 'Registrar pago',
         description: 'Registra el pago de una reserva. El monto debe cubrir el total calculado. Se emite evento `PAGO_REGISTRADO` en outbox.',
         requestBody: {

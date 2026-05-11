@@ -1,12 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
 import { ReservaService } from './reserva.service.js';
+import { ESTADO_A_STATUS, toReservaDto } from './reserva.dto.js';
 
 export class ReservaController {
   constructor(private readonly reservaService: ReservaService) {}
 
   create = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      res.status(201).json({ success: true, data: await this.reservaService.create(req.user!.id, req.body) });
+      const reserva = await this.reservaService.create(req.user!.id, req.body);
+      res.status(201).json({ success: true, data: toReservaDto(reserva) });
     } catch (err) { next(err); }
   };
 
@@ -18,7 +20,8 @@ export class ReservaController {
 
   getById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      res.json({ success: true, data: await this.reservaService.getById(req.params['id'] as string, req.user!.id, req.user!.role === 'ADMIN') });
+      const reserva = await this.reservaService.getById(req.params['id'] as string, req.user!.id, req.user!.role === 'ADMIN');
+      res.json({ success: true, data: toReservaDto(reserva) });
     } catch (err) { next(err); }
   };
 
@@ -30,7 +33,9 @@ export class ReservaController {
 
   updateStatus = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      res.json({ success: true, data: await this.reservaService.updateStatus(req.params['id'] as string, req.body.status) });
+      const statusInterno = ESTADO_A_STATUS[req.body.estado] ?? req.body.estado;
+      const reserva = await this.reservaService.updateStatus(req.params['id'] as string, statusInterno);
+      res.json({ success: true, data: toReservaDto(reserva) });
     } catch (err) { next(err); }
   };
 

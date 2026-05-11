@@ -44,7 +44,10 @@ export class ReservaService {
 
     const vehiculo = await this.vehiculoRepository.findByIdWithRelations(dto.vehiculoId);
     if (!vehiculo || !vehiculo.isActive || vehiculo.deletedAt) throw new NotFoundException('Vehículo', dto.vehiculoId);
-    
+
+    // agenciaId: si Booking no lo envía, se toma del vehículo
+    const agenciaId = dto.agenciaId ?? (vehiculo as any).agenciaId;
+
     // 1. Validar que el vehículo esté DISPONIBLE
     if (vehiculo.status !== 'DISPONIBLE') {
       throw new NoAvailabilityException(`Este vehículo ya no está disponible (Estado actual: ${vehiculo.status})`);
@@ -77,7 +80,7 @@ export class ReservaService {
     const totalAmount = precioBase + precioSeguro + precioExtras;
 
     const reserva = await this.reservaRepository.create({
-      usuarioId, vehiculoId: dto.vehiculoId, agenciaId: dto.agenciaId,
+      usuarioId, vehiculoId: dto.vehiculoId, agenciaId,
       seguroId: dto.seguroId ?? null, canalVentaId: dto.canalVentaId ?? null,
       codigoReserva: this.generarCodigo(),
       fechaInicio, fechaFin, diasTotal: dias,
@@ -86,7 +89,7 @@ export class ReservaService {
       extras: extrasData,
     });
 
-    await this.outboxRepository.publicar({ usuarioId, evento: 'RESERVA_CREADA', payload: { reservaId: (reserva as any).id, vehiculoId: dto.vehiculoId, totalAmount } });
+    await this.outboxRepository.publicar({ usuarioId, evento: 'RESERVA_CREADA', payload: { reservaId: (reserva as any).id, vehiculoId: dto.vehiculoId, totalAmount, clienteIdExterno: dto.clienteId ?? null } });
     await this.historialRepository.registrar({ usuarioId, accion: 'RESERVA_CREADA', entidad: 'Reserva', entidadId: (reserva as any).id, detalle: { codigoReserva: (reserva as any).codigoReserva, totalAmount } });
 
     return reserva;

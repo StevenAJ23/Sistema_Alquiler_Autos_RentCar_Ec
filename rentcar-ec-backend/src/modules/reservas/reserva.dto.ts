@@ -4,7 +4,7 @@ const dateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Formato de fecha inv
 
 export const CreateReservaSchema = z.object({
   vehiculoId:   z.string().min(1, 'El vehículo es requerido'),
-  agenciaId:    z.string().min(1, 'La agencia es requerida'),
+  agenciaId:    z.string().optional(),
   fechaInicio:  dateString.refine(v => {
     const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
     return new Date(v + 'T00:00:00') >= hoy;
@@ -19,7 +19,8 @@ export const CreateReservaSchema = z.object({
                .min(1, 'La cantidad mínima de extras es 1')
                .max(10, 'La cantidad máxima de extras es 10'),
   })).optional(),
-  notas: z.string().trim().max(500, 'Las notas no pueden superar 500 caracteres').optional(),
+  notas:     z.string().trim().max(500, 'Las notas no pueden superar 500 caracteres').optional(),
+  clienteId: z.string().uuid('clienteId debe ser un UUID válido de Booking').optional(),
 }).superRefine((data, ctx) => {
   if (data.fechaInicio && data.fechaFin) {
     const inicio = new Date(data.fechaInicio + 'T00:00:00');
@@ -34,12 +35,32 @@ export const CreateReservaSchema = z.object({
   }
 });
 
+// Acepta los valores del contrato de Booking. FINALIZADA se mapea internamente a COMPLETADA.
 export const UpdateReservaStatusSchema = z.object({
-  status: z.enum(
-    ['PENDIENTE', 'CONFIRMADA', 'ACTIVA', 'COMPLETADA', 'CANCELADA'],
-    { errorMap: () => ({ message: 'Estado de reserva inválido' }) },
+  estado: z.enum(
+    ['PENDIENTE', 'CONFIRMADA', 'CANCELADA', 'FINALIZADA'],
+    { errorMap: () => ({ message: 'Estado inválido. Valores permitidos: PENDIENTE, CONFIRMADA, CANCELADA, FINALIZADA' }) },
   ),
 });
 
+export const ESTADO_A_STATUS: Record<string, string> = {
+  PENDIENTE:  'PENDIENTE',
+  CONFIRMADA: 'CONFIRMADA',
+  CANCELADA:  'CANCELADA',
+  FINALIZADA: 'COMPLETADA',
+};
+
 export type CreateReservaDto       = z.infer<typeof CreateReservaSchema>;
 export type UpdateReservaStatusDto = z.infer<typeof UpdateReservaStatusSchema>;
+
+export function toReservaDto(r: any) {
+  return {
+    id:            r.id,
+    codigoReserva: r.codigoReserva,
+    estado:        r.status,
+    total:         Number(r.totalAmount),
+    fechaInicio:   r.fechaInicio,
+    fechaFin:      r.fechaFin,
+    vehiculoId:    r.vehiculoId,
+  };
+}
